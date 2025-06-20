@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>C Exercises - Programming Hub</title>
+    
+    <!-- External CSS Files -->
+    <link rel="stylesheet" href="css/global.css">
+    <link rel="stylesheet" href="css/exercises.css">
+    
+    <style>
+        /* Progress Tracking Styles */
+        .progress-section {
+            background: rgba(30, 41, 59, 0.5);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+
+        .progress-bar {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem;
+            height: 20px;
+            overflow: hidden;
+            margin: 1rem auto;
+            max-width: 600px;
+        }
+
+        .progress-bar-fill {
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            height: 100%;
+            width: 0%;
+            transition: width 0.5s ease;
+            border-radius: 1rem;
+        }
+
+        .progress-text {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: var(--primary);
+        }
+
+        /* Enhanced Stats */
+        .exercise-stats {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            flex-wrap: wrap;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* Completed Exercise Styling */
+        .exercise-card {
+            position: relative;
+        }
+
+        .exercise-card.completed {
+            border-color: var(--success);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .completed-badge {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: var(--success);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 1rem;
+            font-size: 0.75rem;
+            font-weight: bold;
+            animation: popIn 0.3s ease;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Mark Complete Button */
+        .mark-complete-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+
+        .mark-complete-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+        }
+
+        .mark-complete-btn.completed {
+            background: rgba(16, 185, 129, 0.2);
+            border: 2px solid var(--success);
+            color: var(--success);
+        }
+
+        /* Search Highlighting */
+        mark {
+            background: rgba(255, 212, 59, 0.3);
+            color: inherit;
+            padding: 0 2px;
+            border-radius: 2px;
+            font-weight: bold;
+        }
+
+        /* Additional styles from Chunk 2 */
+        .exercises-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 2rem;
+            margin-bottom: 4rem;
+            max-width: 1000px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .points-indicator {
+            background: rgba(34, 211, 238, 0.2);
+            color: var(--secondary);
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .error-message {
+            text-align: center;
+            padding: 3rem;
+            color: var(--danger);
+        }
+
+        .hint-box {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .hint-box.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .solution-box {
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+            display: none;
+        }
+
+        .solution-box.show {
+            display: block;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        .solution-box h4 {
+            color: var(--success);
+            margin-bottom: 1rem;
+        }
+
+        .keyword { color: #c084fc; }
+        .type { color: #67e8f9; }
+        .function { color: #fbbf24; }
+        .string { color: #86efac; }
+        .comment { color: #64748b; font-style: italic; }
+        .number { color: #fca5a5; }
+
+        .exercise-actions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success) 0%, #059669 100%);
+            color: white;
+        }
+
+        /* Clear progress button */
+        .clear-progress-btn {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--danger);
+            border: 1px solid var(--danger);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .clear-progress-btn:hover {
+            background: var(--danger);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav>
+        <div class="nav-container">
+            <div class="logo">C Programming Hub</div>
+            <ul class="nav-links">
+                <li><a href="index.html">Home</a></li>
+                <li><a href="exercises.html">Exercises</a></li>
+                <li><a href="resources.html">Resources</a></li>
+                <li><a href="about.html">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Exercise Page Header -->
+    <header class="exercises-header">
+        <h1>C Programming Exercises</h1>
+        <p> Don't Forget To Submit Forks!</p>
+    </header>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Progress Section -->
+        <div class="progress-section">
+            <h2>Your Progress</h2>
+            <div class="progress-bar">
+                <div class="progress-bar-fill"></div>
+            </div>
+            <p class="progress-text">0% Complete</p>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="filter-controls">
+            <!-- Search -->
+            <div class="filter-group">
+                <label>Search</label>
+                <div class="search-container">
+                    <span class="search-icon">🔍</span>
+                    <input type="text" class="search-input" placeholder="Search exercises..." id="searchInput">
+                </div>
+            </div>
+
+            <!-- Difficulty Filter -->
+            <div class="filter-group">
+                <label>Difficulty</label>
+                <div class="filter-badges">
+                    <span class="badge active" data-filter="difficulty" data-value="all">All</span>
+                    <span class="badge easy" data-filter="difficulty" data-value="easy">Easy</span>
+                    <span class="badge medium" data-filter="difficulty" data-value="medium">Medium</span>
+                    <span class="badge hard" data-filter="difficulty" data-value="hard">Hard</span>
+                </div>
+            </div>
+
+            <!-- Topic Filter -->
+            <div class="filter-group">
+                <label>Topic</label>
+                <div class="topic-badges">
+                    <span class="badge active" data-filter="topic" data-value="all">All Topics</span>
+                    <span class="badge" data-filter="topic" data-value="structs">Structs</span>
+                    <span class="badge" data-filter="topic" data-value="loops">Loops</span>
+                    <span class="badge" data-filter="topic" data-value="pointers">Pointers</span>
+                    <span class="badge" data-filter="topic" data-value="arrays">Arrays</span>
+                    <span class="badge" data-filter="topic" data-value="functions">Functions</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Enhanced Exercise Stats -->
+        <div class="exercise-stats">
+            <div class="stat">
+                <span class="stat-number" id="totalExercises">0</span>
+                <span class="stat-label">Total Exercises</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number" id="completedExercises">0</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat">
+                <span class="stat-number" id="showingExercises">0</span>
+                <span class="stat-label">Showing</span>
+            </div>
+        </div>
+
+        <!-- Exercise Grid - Empty, will be filled by JavaScript -->
+        <div class="exercises-grid" id="exercisesGrid">
+            <!-- Exercises will be loaded here dynamically -->
+            <div class="loading" id="loadingIndicator">
+                <div class="spinner"></div>
+                <p>Loading exercises...</p>
+            </div>
+        </div>
+
+        <!-- No Results Message (hidden by default) -->
+        <div class="no-results" id="noResults" style="display: none;">
+            <h3>No exercises found</h3>
+            <p>Try adjusting your filters or search query</p>
+        </div>
+
+        <!-- Clear Progress Button -->
+        <div style="text-align: center; margin-top: 2rem;">
+            <button class="clear-progress-btn" onclick="exerciseFunctions.clearProgress()">
+                🗑️ Clear All Progress
+            </button>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer>
+        <p>For C learners | <a href="https://youtu.be/dQw4w9WgXcQ?si=qAeHFebOKT69-b71">Magic</a></p>
+        <p style="font-size: 0.875rem; color: #475569; margin-top: 0.5rem;">Solutions are password-protected to encourage learning 🔐</p>
+    </footer>
+
+    <!-- External JavaScript -->
+    <script src="js/main.js"></script>
+    <!-- Replace exercise-loader.js with exercise-loader-enhanced.js -->
+    <script src="js/exercise-loader.js"></script>
+</body>
+</html>
