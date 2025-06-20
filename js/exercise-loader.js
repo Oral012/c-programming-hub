@@ -36,11 +36,198 @@ async function loadExercises() {
     }
 }
 
+// Submit solution to AI for checking
+async function submitSolution(exerciseId) {
+    const exercise = allExercises.find(e => e.id === exerciseId);
+    const userCode = document.getElementById(`code-${exerciseId}`).value;
+    
+    if (!userCode.trim()) {
+        if (window.mainUtils && window.mainUtils.showNotification) {
+            window.mainUtils.showNotification('Please write some code before submitting!', 'error');
+        } else {
+            alert('Please write some code before submitting!');
+        }
+        return;
+    }
+    
+    // Show loading state
+    const feedbackSection = document.getElementById(`feedback-${exerciseId}`);
+    const submitBtn = document.getElementById(`submit-btn-${exerciseId}`);
+    
+    feedbackSection.innerHTML = `
+        <div class="loading-feedback">
+            <div class="spinner"></div>
+            <p>🤖 AI is analyzing your code...</p>
+        </div>
+    `;
+    
+    submitBtn.disabled = true;
+    submitBtn.textContent = 'Checking...';
+    
+    try {
+        // Determine the API URL based on environment
+        const apiUrl = window.location.hostname === 'localhost' 
+            ? 'http://localhost:3000/api/check-solution'
+            : '/api/check-solution';
+            
+        const response = await fetch(apiUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                exerciseId: exerciseId,
+                userCode: userCode,
+                expectedSolution: exercise.solution.code,
+                problemDescription: exercise.description,
+                maxPoints: exercise.points,
+                difficulty: exercise.difficulty
+            })
+        });
+        
+        if (!response.ok) {
+            throw new Error('Failed to check solution');
+        }
+        
+        const result = await response.json();
+        displayFeedback(exerciseId, result);
+        
+        // Save the submission
+        saveSubmission(exerciseId, userCode, result.score, exercise.points);
+        
+    } catch (error) {
+        console.error('Error submitting solution:', error);
+        feedbackSection.innerHTML = `
+            <div class="error-feedback">
+                <p>❌ Failed to check solution. Please try again.</p>
+            </div>
+        `;
+        
+        if (window.mainUtils && window.mainUtils.showNotification) {
+            window.mainUtils.showNotification('Failed to check solution. Please try again.', 'error');
+        }
+    } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = 'Submit Solution';
+    }
+}
+
+// Display AI feedback
+function displayFeedback(exerciseId, result) {
+    const feedbackSection = document.getElementById(`feedback-${exerciseId}`);
+    const exercise = allExercises.find(e => e.id === exerciseId);
+    
+    // Determine feedback class based on percentage
+    const percentage = result.percentage || Math.round((result.score / exercise.points) * 100);
+    let feedbackClass = 'error';
+    let emoji = '😅';
+    if (percentage >= 80) {
+        feedbackClass = 'success';
+        emoji = '🎉';
+    } else if (percentage >= 60) {
+        feedbackClass = 'warning';
+        emoji = '💪';
+    }
+    
+    feedbackSection.innerHTML = `
+        <div class="ai-feedback ${feedbackClass}">
+            <div class="feedback-header">
+                <h4>${emoji} AI Feedback</h4>
+                <div class="score-display">
+                    <span class="score-label">Score:</span>
+                    <span class="score-value">${result.score}/${result.maxScore || exercise.points}</span>
+                    <span class="score-percentage">(${percentage}%)</span>
+                </div>
+            </div>
+            
+            <div class="feedback-content">
+                ${result.strengths ? `
+                    <div class="feedback-section">
+                        <h5>✅ What you did well:</h5>
+                        <p>${result.strengths}</p>
+                    </div>
+                ` : ''}
+                
+                ${result.issues ? `
+                    <div class="feedback-section">
+                        <h5>⚠️ Issues found:</h5>
+                        <p>${result.issues}</p>
+                    </div>
+                ` : ''}
+                
+                ${result.suggestions ? `
+                    <div class="feedback-section">
+                        <h5>💡 Suggestions for improvement:</h5>
+                        <p>${result.suggestions}</p>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <div class="feedback-actions">
+                ${percentage >= 80 ? `
+                    <button class="btn btn-success" onclick="exerciseFunctions.markExerciseCompleted(${exerciseId})">
+                        ✓ Mark as Complete
+                    </button>
+                ` : `
+                    <button class="btn btn-primary" onclick="document.getElementById('code-${exerciseId}').focus()">
+                        Try Again
+                    </button>
+                `}
+            </div>
+        </div>
+    `;
+    
+    // Show notification
+    if (window.mainUtils && window.mainUtils.showNotification) {
+        if (percentage >= 80) {
+            window.mainUtils.showNotification('Great job! Your solution is excellent!', 'success');
+        } else if (percentage >= 60) {
+            window.mainUtils.showNotification('Good effort! Check the feedback for improvements.', 'info');
+        } else {
+            window.mainUtils.showNotification('Keep trying! Review the feedback and try again.', 'warning');
+        }
+    }
+}
+
+// Save submission to localStorage
+function saveSubmission(exerciseId, code, score, maxScore) {
+    const submissions = JSON.parse(localStorage.getItem('codeSubmissions') || '{}');
+    
+    if (!submissions[exerciseId]) {
+        submissions[exerciseId] = [];
+    }
+    
+    submissions[exerciseId].push({
+        code: code,
+        score: score,
+        maxScore: maxScore,
+        percentage: Math.round((score / maxScore) * 100),
+        timestamp: new Date().toISOString()
+    });
+    
+    // Keep only last 5 submissions per exercise
+    if (submissions[exerciseId].length > 5) {
+        submissions[exerciseId] = submissions[exerciseId].slice(-5);
+    }
+    
+    localStorage.setItem('codeSubmissions', JSON.stringify(submissions));
+}
+
+// Get last submission for an exercise
+function getLastSubmission(exerciseId) {
+    const submissions = JSON.parse(localStorage.getItem('codeSubmissions') || '{}');
+    const exerciseSubmissions = submissions[exerciseId] || [];
+    return exerciseSubmissions[exerciseSubmissions.length - 1] || null;
+}
+
 // Create HTML for a single exercise card
 function createExerciseCard(exercise) {
     // Check if this exercise is completed
     const completedExercises = getCompletedExercises();
     const isCompleted = completedExercises.includes(exercise.id);
+    
+    // Get last submission if exists
+    const lastSubmission = getLastSubmission(exercise.id);
     
     // Add completed badge if needed
     const completedBadge = isCompleted ? '<span class="completed-badge">✓ Completed</span>' : '';
@@ -110,6 +297,26 @@ function createExerciseCard(exercise) {
                 <h4>Solution:</h4>
                 <pre><code class="language-c">${highlightCode(exercise.solution.code)}</code></pre>
             </div>
+            
+            <div class="code-submission">
+                <h4>Your Solution:</h4>
+                <textarea 
+                    id="code-${exercise.id}" 
+                    class="code-editor" 
+                    placeholder="// Write your C code here...\n// Start by defining the struct as shown above"
+                >${lastSubmission ? lastSubmission.code : ''}</textarea>
+                <button 
+                    class="btn submit-solution-btn" 
+                    id="submit-btn-${exercise.id}"
+                    onclick="submitSolution(${exercise.id})">
+                    Submit Solution
+                </button>
+                ${lastSubmission ? `
+                    <span class="last-score">Last score: ${lastSubmission.score}/${lastSubmission.maxScore} (${lastSubmission.percentage}%)</span>
+                ` : ''}
+            </div>
+            
+            <div class="feedback-section" id="feedback-${exercise.id}"></div>
         </div>
     `;
 }
@@ -314,6 +521,7 @@ function updateProgressBar() {
 function clearProgress() {
     if (confirm('Are you sure you want to clear all progress? This cannot be undone.')) {
         localStorage.removeItem('completedExercises');
+        localStorage.removeItem('codeSubmissions');
         passwordVerified = false; // Reset password verification too
         
         // Show notification if available
@@ -395,3 +603,6 @@ window.exerciseFunctions = {
     markExerciseCompleted,
     clearProgress
 };
+
+// Make submitSolution globally available
+window.submitSolution = submitSolution;
