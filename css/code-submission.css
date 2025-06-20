@@ -1,0 +1,261 @@
+/* css/code-submission.css - Styles for AI Code Coach */
+
+/* Code Editor Styles */
+.code-submission {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.code-submission h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-size: 1.1rem;
+}
+
+.code-editor {
+    width: 100%;
+    min-height: 250px;
+    background: #0f172a;
+    color: #e2e8f0;
+    border: 2px solid #334155;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    font-family: 'Monaco', 'Consolas', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: all 0.3s ease;
+    tab-size: 4;
+    white-space: pre;
+}
+
+.code-editor:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+}
+
+.code-editor::placeholder {
+    color: #475569;
+    white-space: pre-line;
+}
+
+/* Submit Button */
+.submit-solution-btn {
+    margin-top: 1rem;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+    color: white;
+    padding: 0.75rem 2rem;
+    border: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: inline-block;
+}
+
+.submit-solution-btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(99, 102, 241, 0.3);
+}
+
+.submit-solution-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Last Score Display */
+.last-score {
+    display: inline-block;
+    margin-left: 1rem;
+    padding: 0.5rem 1rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--primary);
+}
+
+/* Feedback Section */
+.feedback-section {
+    margin-top: 1.5rem;
+    min-height: 100px;
+}
+
+.loading-feedback {
+    text-align: center;
+    padding: 2rem;
+    background: rgba(99, 102, 241, 0.1);
+    border-radius: 0.5rem;
+    border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.loading-feedback .spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(99, 102, 241, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    margin: 0 auto 1rem;
+    animation: spin 1s linear infinite;
+}
+
+.error-feedback {
+    padding: 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    border-radius: 0.5rem;
+    color: #fca5a5;
+    text-align: center;
+}
+
+/* AI Feedback Box */
+.ai-feedback {
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    border: 2px solid;
+    animation: slideIn 0.3s ease-out;
+}
+
+.ai-feedback.success {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10b981;
+}
+
+.ai-feedback.warning {
+    background: rgba(251, 191, 36, 0.1);
+    border-color: #fbbf24;
+}
+
+.ai-feedback.error {
+    background: rgba(239, 68, 68, 0.1);
+    border-color: #ef4444;
+}
+
+.feedback-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.feedback-header h4 {
+    margin: 0;
+    font-size: 1.25rem;
+}
+
+.score-display {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.5rem;
+    font-weight: bold;
+}
+
+.score-label {
+    color: #94a3b8;
+    font-size: 1rem;
+    font-weight: normal;
+}
+
+.score-value {
+    color: var(--primary);
+}
+
+.score-percentage {
+    font-size: 1rem;
+    color: #94a3b8;
+    font-weight: normal;
+}
+
+.ai-feedback.success .score-value {
+    color: #10b981;
+}
+
+.ai-feedback.warning .score-value {
+    color: #fbbf24;
+}
+
+.ai-feedback.error .score-value {
+    color: #ef4444;
+}
+
+/* Feedback Content */
+.feedback-content {
+    margin-bottom: 1.5rem;
+}
+
+.feedback-content .feedback-section {
+    margin-bottom: 1rem;
+}
+
+.feedback-content h5 {
+    margin: 0 0 0.5rem 0;
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.feedback-content p {
+    margin: 0;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+
+/* Feedback Actions */
+.feedback-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.feedback-actions .btn {
+    padding: 0.5rem 1.5rem;
+    font-size: 0.875rem;
+}
+
+/* Animations */
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .code-editor {
+        min-height: 200px;
+        font-size: 13px;
+    }
+    
+    .feedback-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .score-display {
+        font-size: 1.25rem;
+    }
+    
+    .submit-solution-btn {
+        width: 100%;
+        text-align: center;
+    }
+    
+    .last-score {
+        display: block;
+        margin-left: 0;
+        margin-top: 0.5rem;
+        text-align: center;
+    }
+}
