@@ -62,8 +62,6 @@ If the student submission is not C code (e.g., questions, random text), respond 
 
 Scoring Guide:
 - Perfect solution: ${maxPoints} points
-Scoring Guide:
-- Perfect solution: ${maxPoints} points
 - Minor issues (style, efficiency): ${Math.round(maxPoints * 0.9)}-${Math.round(maxPoints * 0.95)} points
 - Works but has problems: ${Math.round(maxPoints * 0.7)}-${Math.round(maxPoints * 0.85)} points
 - Partial solution: ${Math.round(maxPoints * 0.4)}-${Math.round(maxPoints * 0.6)} points
@@ -80,10 +78,29 @@ Respond in this exact JSON format:
 }`;
 
   try {
+    // DEBUG: Log environment variables
+    console.log('=== ENVIRONMENT DEBUG ===');
+    console.log('OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
+    console.log('OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length);
+    console.log('OPENROUTER_API_KEY first 10 chars:', process.env.OPENROUTER_API_KEY?.substring(0, 10) + '...');
+    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('API')));
+
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    
+    if (!apiKey) {
+      console.error('ERROR: OPENROUTER_API_KEY is not set!');
+      return res.status(500).json({ 
+        error: 'API key not configured',
+        debug: 'OPENROUTER_API_KEY environment variable is missing'
+      });
+    }
+
+    console.log('Making request to OpenRouter...');
+    
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.OPENROUTER_API_KEY}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://c-programming-hub.vercel.app',
         'X-Title': 'C Programming Hub'
@@ -105,16 +122,39 @@ Respond in this exact JSON format:
       })
     });
 
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+
     if (!response.ok) {
       const error = await response.text();
-      console.error('DeepSeek API error:', error);
-      return res.status(500).json({ error: 'Failed to check solution' });
+      console.error('OpenRouter API error:', error);
+      console.error('Full response:', {
+        status: response.status,
+        statusText: response.statusText,
+        error: error
+      });
+      
+      // Try to parse error for more details
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(error);
+      } catch {
+        errorDetails = error;
+      }
+      
+      return res.status(500).json({ 
+        error: 'Failed to check solution',
+        details: errorDetails,
+        status: response.status
+      });
     }
 
     const data = await response.json();
+    console.log('API Response received:', data);
     
     // Extract the content from the API response
     const content = data.choices[0].message.content;
+    console.log('AI Response content:', content);
     
     // Parse the JSON response
     let feedback;
@@ -122,7 +162,12 @@ Respond in this exact JSON format:
       feedback = JSON.parse(content);
     } catch (parseError) {
       console.error('Failed to parse AI response:', content);
-      return res.status(500).json({ error: 'Invalid response from AI' });
+      console.error('Parse error:', parseError);
+      return res.status(500).json({ 
+        error: 'Invalid response from AI',
+        aiResponse: content,
+        parseError: parseError.message
+      });
     }
 
     // Ensure score is within valid range
@@ -133,10 +178,16 @@ Respond in this exact JSON format:
       feedback.percentage = Math.round((feedback.score / (maxPoints || 100)) * 100);
     }
 
+    console.log('Sending feedback:', feedback);
     res.status(200).json(feedback);
 
   } catch (error) {
-    console.error('Error calling DeepSeek API:', error);
-    res.status(500).json({ error: 'Failed to process solution' });
+    console.error('Error calling OpenRouter API:', error);
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      error: 'Failed to process solution',
+      message: error.message,
+      stack: error.stack
+    });
   }
 }
