@@ -68,14 +68,16 @@ Respond in this exact JSON format:
 }`;
 
   try {
-    const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        'HTTP-Referer': 'https://c-programming-hub.vercel.app',
+        'X-Title': 'C Programming Hub'
       },
       body: JSON.stringify({
-        model: "deepseek-chat",
+        model: "deepseek/deepseek-r1-0528:free",  // FREE model!
         messages: [
           {
             role: "system",
