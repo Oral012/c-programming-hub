@@ -1,3 +1,5 @@
+import { Buffer } from 'buffer';
+
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -78,116 +80,111 @@ Respond in this exact JSON format:
 }`;
 
   try {
-    // DEBUG: Log environment variables
-    console.log('=== ENVIRONMENT DEBUG ===');
-    console.log('OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
-    console.log('OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length);
-    console.log('OPENROUTER_API_KEY first 10 chars:', process.env.OPENROUTER_API_KEY?.substring(0, 10) + '...');
-    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('API')));
-
+    // VERCEL FIX: Get the API key and ensure it's properly formatted
     const apiKey = process.env.OPENROUTER_API_KEY;
     
-    if (!apiKey) {
-      console.error('ERROR: OPENROUTER_API_KEY is not set!');
+    if (!apiKey || apiKey === 'undefined') {
       return res.status(500).json({ 
-        error: 'API key not configured',
-        debug: 'OPENROUTER_API_KEY environment variable is missing'
+        error: 'Configuration error',
+        fix: 'Redeploy project from Vercel dashboard after setting OPENROUTER_API_KEY'
       });
     }
 
-    console.log('Making request to OpenRouter...');
+    // CRITICAL: Trim any whitespace that might have been added
+    const cleanApiKey = apiKey.trim();
     
+    const requestBody = {
+      model: "deepseek/deepseek-r1-0528:free",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      temperature: 0.7,
+      max_tokens: 500
+    };
+
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${cleanApiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://c-programming-hub.vercel.app',
+        'HTTP-Referer': req.headers.referer || 'https://c-programming-hub.vercel.app',
         'X-Title': 'C Programming Hub'
       },
-      body: JSON.stringify({
-        model: "deepseek/deepseek-r1-0528:free",  // FREE model!
-        messages: [
-          {
-            role: "system",
-            content: "You are a helpful C programming instructor. You evaluate code fairly but encouragingly. Always respond with valid JSON only, no additional text."
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500
-      })
+      body: JSON.stringify(requestBody)
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
+    const responseText = await response.text();
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('OpenRouter API error:', error);
-      console.error('Full response:', {
-        status: response.status,
-        statusText: response.statusText,
-        error: error
-      });
-      
-      // Try to parse error for more details
-      let errorDetails;
-      try {
-        errorDetails = JSON.parse(error);
-      } catch {
-        errorDetails = error;
-      }
-      
+      console.error('OpenRouter error:', responseText);
       return res.status(500).json({ 
-        error: 'Failed to check solution',
-        details: errorDetails,
-        status: response.status
+        error: 'API call failed',
+        status: response.status,
+        details: responseText
       });
     }
 
-    const data = await response.json();
-    console.log('API Response received:', data);
-    
-    // Extract the content from the API response
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (e) {
+      return res.status(500).json({ 
+        error: 'Invalid API response',
+        response: responseText
+      });
+    }
+
+    if (!data.choices || !data.choices[0]) {
+      return res.status(500).json({ 
+        error: 'No response from AI',
+        data: data
+      });
+    }
+
     const content = data.choices[0].message.content;
-    console.log('AI Response content:', content);
     
-    // Parse the JSON response
     let feedback;
     try {
       feedback = JSON.parse(content);
     } catch (parseError) {
-      console.error('Failed to parse AI response:', content);
-      console.error('Parse error:', parseError);
-      return res.status(500).json({ 
-        error: 'Invalid response from AI',
-        aiResponse: content,
-        parseError: parseError.message
-      });
+      // Try to extract JSON from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        try {
+          feedback = JSON.parse(jsonMatch[0]);
+        } catch {
+          return res.status(500).json({ 
+            error: 'Could not parse AI response',
+            content: content
+          });
+        }
+      } else {
+        return res.status(500).json({ 
+          error: 'Invalid AI response format',
+          content: content
+        });
+      }
     }
 
     // Ensure score is within valid range
-    feedback.score = Math.max(0, Math.min(maxPoints || 100, feedback.score));
+    feedback.score = Math.max(0, Math.min(maxPoints || 100, feedback.score || 0));
     
     // Calculate percentage if not provided
     if (!feedback.percentage) {
       feedback.percentage = Math.round((feedback.score / (maxPoints || 100)) * 100);
     }
 
-    console.log('Sending feedback:', feedback);
     res.status(200).json(feedback);
 
   } catch (error) {
-    console.error('Error calling OpenRouter API:', error);
-    console.error('Error stack:', error.stack);
+    console.error('Handler error:', error);
     res.status(500).json({ 
-      error: 'Failed to process solution',
+      error: 'Internal server error',
       message: error.message,
-      stack: error.stack
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
 }
