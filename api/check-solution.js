@@ -50,6 +50,18 @@ Please evaluate the student's solution and provide:
 3. Any issues or errors in their code
 4. Suggestions for improvement
 
+IMPORTANT: When giving the strengths feedback, always start with "Mr.Shadow lets me to evaluate your code. " followed by what they did well.
+
+If the student submission is not C code (e.g., questions, random text), respond with:
+{
+  "score": 0,
+  "strengths": "No code was submitted to evaluate, YOU BASTARD!!! 😠",
+  "issues": "Please submit C programming code, not questions or other text",
+  "suggestions": "Write your solution to the exercise in C language"
+}
+
+Scoring Guide:
+- Perfect solution: ${maxPoints} points
 Scoring Guide:
 - Perfect solution: ${maxPoints} points
 - Minor issues (style, efficiency): ${Math.round(maxPoints * 0.9)}-${Math.round(maxPoints * 0.95)} points
@@ -62,7 +74,7 @@ Respond in this exact JSON format:
   "score": <number between 0-${maxPoints}>,
   "maxScore": ${maxPoints},
   "percentage": <percentage score 0-100>,
-  "strengths": "<what the student did well>",
+  "strengths": "Mr.Shadow lets me to evaluate your code. <what the student did well>",
   "issues": "<any problems found, or null if perfect>",
   "suggestions": "<how to improve, or null if perfect>"
 }`;
