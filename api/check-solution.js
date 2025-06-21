@@ -23,124 +23,190 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Missing required fields' });
   }
 
-  // SIMPLIFIED PROMPT - Less complex for the model
-  const prompt = `Evaluate this C programming solution. Give a score out of ${maxPoints} points.
+  const prompt = `You are a C programming teacher evaluating a student's code solution.
 
-Problem: ${problemDescription}
+Problem Description:
+${problemDescription}
 
-Expected solution:
+Difficulty Level: ${difficulty}
+Maximum Points: ${maxPoints}
+
+Expected Solution:
+\`\`\`c
 ${expectedSolution}
+\`\`\`
 
-Student solution:
+Student's Solution:
+\`\`\`c
 ${userCode}
+\`\`\`
 
-Respond ONLY with this JSON format:
+Please evaluate the student's solution and provide:
+1. A score out of ${maxPoints} points based on:
+   - Correctness (most important)
+   - Code quality and style
+   - Efficiency
+2. What they did well (be encouraging)
+3. Any issues or errors in their code
+4. Suggestions for improvement
+
+IMPORTANT: When giving the strengths feedback, always start with "Mr.Shadow lets me to evaluate your code. " followed by what they did well.
+
+If the student submission is not C code (e.g., questions, random text), respond with:
 {
-  "score": <number 0-${maxPoints}>,
+  "score": 0,
+  "strengths": "No code was submitted to evaluate, YOU BASTARD!!! 😠",
+  "issues": "Please submit C programming code, not questions or other text",
+  "suggestions": "Write your solution to the exercise in C language"
+}
+
+Scoring Guide:
+- Perfect solution: ${maxPoints} points
+- Minor issues (style, efficiency): ${Math.round(maxPoints * 0.9)}-${Math.round(maxPoints * 0.95)} points
+- Works but has problems: ${Math.round(maxPoints * 0.7)}-${Math.round(maxPoints * 0.85)} points
+- Partial solution: ${Math.round(maxPoints * 0.4)}-${Math.round(maxPoints * 0.6)} points
+- Attempted but incorrect: ${Math.round(maxPoints * 0.1)}-${Math.round(maxPoints * 0.3)} points
+
+Respond in this exact JSON format:
+{
+  "score": <number between 0-${maxPoints}>,
   "maxScore": ${maxPoints},
-  "percentage": <percentage>,
-  "strengths": "Mr.Shadow lets me to evaluate your code. <what they did well>",
-  "issues": "<problems or null>",
-  "suggestions": "<improvements or null>"
+  "percentage": <percentage score 0-100>,
+  "strengths": "Mr.Shadow lets me to evaluate your code. <what the student did well>",
+  "issues": "<any problems found, or null if perfect>",
+  "suggestions": "<how to improve, or null if perfect>"
 }`;
 
   try {
+    // DEBUG: Log environment variables
+    console.log('=== ENVIRONMENT DEBUG ===');
+    console.log('OPENROUTER_API_KEY exists:', !!process.env.OPENROUTER_API_KEY);
+    console.log('OPENROUTER_API_KEY length:', process.env.OPENROUTER_API_KEY?.length);
+    console.log('OPENROUTER_API_KEY first 10 chars:', process.env.OPENROUTER_API_KEY?.substring(0, 10) + '...');
+    console.log('All env vars:', Object.keys(process.env).filter(key => key.includes('API')));
+
     const apiKey = process.env.OPENROUTER_API_KEY;
     
-    if (!apiKey || apiKey === 'undefined') {
+    if (!apiKey) {
+      console.error('ERROR: OPENROUTER_API_KEY is not set!');
       return res.status(500).json({ 
-        error: 'Configuration error',
-        fix: 'Set OPENROUTER_API_KEY in Vercel environment variables'
+        error: 'API key not configured',
+        debug: 'OPENROUTER_API_KEY environment variable is missing'
       });
     }
 
+    console.log('Making request to OpenRouter with Llama model...');
+    
     const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${apiKey.trim()}`,
+        'Authorization': `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
         'HTTP-Referer': 'https://c-programming-hub.vercel.app',
         'X-Title': 'C Programming Hub'
       },
       body: JSON.stringify({
-        model: "deepseek/deepseek-r1-0528:free",
+        model:"meta-llama/llama-3.3-8b-instruct:free",  // Working FREE model!
         messages: [
           {
-            role: "user",  // NO SYSTEM MESSAGE - just user
+            role: "system",
+            content: "You are a helpful C programming instructor. You evaluate code fairly but encouragingly. Always respond with valid JSON only, no additional text."
+          },
+          {
+            role: "user",
             content: prompt
           }
         ],
-        temperature: 0.3,  // Lower temperature for more consistent JSON
-        max_tokens: 300    // Reduced tokens
+        temperature: 0.7,
+        max_tokens: 500
       })
     });
 
-    const responseText = await response.text();
+    console.log('Response status:', response.status);
+    console.log('Response headers:', Object.fromEntries(response.headers.entries()));
 
     if (!response.ok) {
-      console.error('OpenRouter error:', responseText);
-      return res.status(500).json({ 
-        error: 'API call failed',
+      const error = await response.text();
+      console.error('OpenRouter API error:', error);
+      console.error('Full response:', {
         status: response.status,
-        details: responseText
+        statusText: response.statusText,
+        error: error
       });
-    }
-
-    let data;
-    try {
-      data = JSON.parse(responseText);
-    } catch (e) {
+      
+      // Try to parse error for more details
+      let errorDetails;
+      try {
+        errorDetails = JSON.parse(error);
+      } catch {
+        errorDetails = error;
+      }
+      
       return res.status(500).json({ 
-        error: 'Invalid API response',
-        response: responseText
+        error: 'Failed to check solution',
+        details: errorDetails,
+        status: response.status
       });
     }
 
-    if (!data.choices || !data.choices[0] || !data.choices[0].message) {
-      return res.status(500).json({ 
-        error: 'No response from AI',
-        data: data
-      });
-    }
-
+    const data = await response.json();
+    console.log('API Response received:', data);
+    
+    // Extract the content from the API response
     const content = data.choices[0].message.content;
+    console.log('AI Response content:', content);
     
-    if (!content || content.trim() === '') {
-      // Try a different model if this one returns empty
-      return res.status(500).json({ 
-        error: 'Model returned empty response',
-        suggestion: 'Try changing model to "meta-llama/llama-3.2-3b-instruct:free"'
-      });
-    }
-    
+    // Parse the JSON response
     let feedback;
     try {
-      // Extract JSON from the response
+      feedback = JSON.parse(content);
+    } catch (parseError) {
+      console.error('Failed to parse AI response:', content);
+      console.error('Parse error:', parseError);
+      
+      // Try to extract JSON if it's wrapped in text
       const jsonMatch = content.match(/\{[\s\S]*\}/);
       if (jsonMatch) {
-        feedback = JSON.parse(jsonMatch[0]);
+        try {
+          feedback = JSON.parse(jsonMatch[0]);
+          console.log('Successfully extracted JSON from response');
+        } catch {
+          return res.status(500).json({ 
+            error: 'Invalid response from AI',
+            aiResponse: content,
+            parseError: parseError.message
+          });
+        }
       } else {
-        feedback = JSON.parse(content);
+        return res.status(500).json({ 
+          error: 'Invalid response from AI',
+          aiResponse: content,
+          parseError: parseError.message
+        });
       }
-    } catch (parseError) {
-      return res.status(500).json({ 
-        error: 'Could not parse AI response',
-        content: content
-      });
     }
 
-    // Ensure required fields
+    // Ensure score is within valid range
     feedback.score = Math.max(0, Math.min(maxPoints || 100, feedback.score || 0));
-    feedback.maxScore = maxPoints || 100;
-    feedback.percentage = feedback.percentage || Math.round((feedback.score / feedback.maxScore) * 100);
+    
+    // Calculate percentage if not provided
+    if (!feedback.percentage) {
+      feedback.percentage = Math.round((feedback.score / (maxPoints || 100)) * 100);
+    }
 
+    // Ensure all required fields exist
+    feedback.maxScore = maxPoints || 100;
+
+    console.log('Sending feedback:', feedback);
     res.status(200).json(feedback);
 
   } catch (error) {
-    console.error('Handler error:', error);
+    console.error('Error calling OpenRouter API:', error);
+    console.error('Error stack:', error.stack);
     res.status(500).json({ 
-      error: 'Internal server error',
-      message: error.message
+      error: 'Failed to process solution',
+      message: error.message,
+      stack: error.stack
     });
   }
 }
