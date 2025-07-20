@@ -55,7 +55,7 @@ IMPORTANT: When giving the strengths feedback, always start with "Mr.Shadow lets
 If the student submission is not C code (e.g., questions, random text), respond with:
 {
   "score": 0,
- "strengths": "No code was submitted to evaluate. Please submit your C code!",
+  "strengths": "No code was submitted to evaluate, try again",
   "issues": "Please submit C programming code, not questions or other text",
   "suggestions": "Write your solution to the exercise in C language"
 }
