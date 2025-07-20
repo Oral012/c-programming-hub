@@ -106,7 +106,7 @@ Respond in this exact JSON format:
         'X-Title': 'C Programming Hub'
       },
       body: JSON.stringify({
-        model:"meta-llama/llama-3.3-8b-instruct:free",  // Working FREE model!
+        model:"mistralai/mistral-small-3.2-24b-instruct:free",  // Working FREE model!
         messages: [
           {
             role: "system",
