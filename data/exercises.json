@@ -276,283 +276,770 @@
       }
     },
     {
-  "exercises": [
-    {
-      "id": 1,
-      "title": "Point Distance Calculator",
-      "topic": "structs",
-      "difficulty": "easy",
-      "points": 35,
-      "description": "Create a struct called Point with x and y coordinates. Write a function findClosest that takes an array of points and a target point, then returns the closest point to the target.",
-      "structDefinition": {
-        "code": "typedef struct {\n    int x;\n    int y;\n} Point;\n\nPoint findClosest(Point points[], int size, Point target);",
-        "language": "c"
-      },
-      "examples": [
-        {
-          "input": "Points: [(1,1), (3,4), (5,2)]\nTarget: (4,3)",
-          "output": "Closest point: (3,4)\nDistance: 1.41",
-          "explanation": "Point (3,4) is closest to target (4,3)"
-        }
-      ],
-      "hints": [
-        "Use the distance formula: √((x2-x1)² + (y2-y1)²). You don't need the actual square root - just compare squared distances!"
-      ],
-      "solution": {
-        "code": "Point findClosest(Point points[], int size, Point target) {\n    Point closest = points[0];\n    int minDist = (points[0].x - target.x) * (points[0].x - target.x) + \n                   (points[0].y - target.y) * (points[0].y - target.y);\n    \n    for (int i = 1; i < size; i++) {\n        int dist = (points[i].x - target.x) * (points[i].x - target.x) + \n                   (points[i].y - target.y) * (points[i].y - target.y);\n        if (dist < minDist) {\n            minDist = dist;\n            closest = points[i];\n        }\n    }\n    return closest;\n}",
-        "language": "c"
-      }
-    },
-    {
-      "id": 2,
-      "title": "Game Character Battle System",
-      "topic": "structs",
-      "difficulty": "medium",
-      "points": 45,
-      "description": "Create a Character struct with health, attack, and defense. Write a function battle that takes two characters and returns the winner after they fight (characters take turns attacking).",
-      "structDefinition": {
-        "code": "typedef struct {\n    char name[50];\n    int health;\n    int attack;\n    int defense;\n} Character;\n\nCharacter battle(Character fighter1, Character fighter2);",
-        "language": "c"
-      },
-      "examples": [
-        {
-          "input": "Fighter1: \"Knight\", HP:100, ATK:25, DEF:10\nFighter2: \"Wizard\", HP:80, ATK:35, DEF:5",
-          "output": "Winner: Knight\nRemaining HP: 20",
-          "explanation": "Knight wins with 20 HP remaining after the battle"
-        }
-      ],
-      "hints": [
-        "Damage = Attacker's ATK - Defender's DEF (minimum 1). Alternate turns until one reaches 0 HP. Return the winner with updated health!"
-      ],
-      "solution": {
-        "code": "Character battle(Character fighter1, Character fighter2) {\n    // Make copies to avoid modifying originals\n    Character f1 = fighter1;\n    Character f2 = fighter2;\n    \n    while (f1.health > 0 && f2.health > 0) {\n        // Fighter1 attacks Fighter2\n        int damage = f1.attack - f2.defense;\n        if (damage < 1) damage = 1;\n        f2.health -= damage;\n        \n        if (f2.health <= 0) break;\n        \n        // Fighter2 attacks Fighter1\n        damage = f2.attack - f1.defense;\n        if (damage < 1) damage = 1;\n        f1.health -= damage;\n    }\n    \n    return (f1.health > 0) ? f1 : f2;\n}",
-        "language": "c"
-      }
-    },
-    {
-      "id": 3,
-      "title": "Rectangle Collision Detection",
-      "topic": "structs",
-      "difficulty": "hard",
-      "points": 60,
-      "description": "Create a Rectangle struct and a CollisionResult struct. Write a function that checks if two rectangles collide and returns detailed collision information including overlap area and direction.",
-      "structDefinition": {
-        "code": "typedef struct {\n    int x, y;      // Top-left corner\n    int width, height;\n} Rectangle;\n\ntypedef struct {\n    bool collides;\n    int overlapArea;\n    Rectangle overlapRect;\n} CollisionResult;\n\nCollisionResult checkCollision(Rectangle rect1, Rectangle rect2);",
-        "language": "c"
-      },
-      "examples": [
-        {
-          "input": "Rect1: x:10, y:10, w:30, h:20\nRect2: x:25, y:15, w:20, h:25",
-          "output": "Collides: Yes\nOverlap Area: 225\nOverlap Rect: x:25, y:15, w:15, h:15",
-          "explanation": "Rectangles overlap with an area of 225 square units"
-        }
-      ],
-      "hints": [
-        "Two rectangles collide if: rect1.x < rect2.x + rect2.width AND rect1.x + rect1.width > rect2.x (same for y-axis). The overlap rectangle's coordinates are the maximum of the left/top edges and minimum of the right/bottom edges."
-      ],
-      "solution": {
-        "code": "CollisionResult checkCollision(Rectangle rect1, Rectangle rect2) {\n    CollisionResult result = {false, 0, {0, 0, 0, 0}};\n    \n    // Check if rectangles collide\n    if (rect1.x < rect2.x + rect2.width &&\n        rect1.x + rect1.width > rect2.x &&\n        rect1.y < rect2.y + rect2.height &&\n        rect1.y + rect1.height > rect2.y) {\n        \n        result.collides = true;\n        \n        // Calculate overlap rectangle\n        result.overlapRect.x = (rect1.x > rect2.x) ? rect1.x : rect2.x;\n        result.overlapRect.y = (rect1.y > rect2.y) ? rect1.y : rect2.y;\n        \n        int right = (rect1.x + rect1.width < rect2.x + rect2.width) ? \n                    rect1.x + rect1.width : rect2.x + rect2.width;\n        int bottom = (rect1.y + rect1.height < rect2.y + rect2.height) ? \n                     rect1.y + rect1.height : rect2.y + rect2.height;\n        \n        result.overlapRect.width = right - result.overlapRect.x;\n        result.overlapRect.height = bottom - result.overlapRect.y;\n        \n        result.overlapArea = result.overlapRect.width * result.overlapRect.height;\n    }\n    \n    return result;\n}",
-        "language": "c"
-      }
-    },
-    {
-      "id": 4,
-      "title": "Dynamic Array Reversal",
+      "id": 11,
+      "title": "Student Grade Manager",
       "topic": "pointers",
       "difficulty": "easy",
-      "points": 20,
-      "description": "Write a function that reverses an array of integers in-place using pointers. The function should take a pointer to the array and its size.",
+      "points": 30,
+      "description": "Create a Student struct with name and grades array. Write a function that takes a pointer to a Student and calculates their average grade.",
       "structDefinition": {
-        "code": "void reverseArray(int *arr, int size);",
+        "code": "typedef struct {\n    char name[50];\n    int grades[5];\n    float average;\n} Student;\n\nvoid calculateAverage(Student *student);",
         "language": "c"
       },
       "examples": [
         {
-          "input": "Array: [10, 20, 30, 40, 50]\nSize: 5",
-          "output": "Reversed: [50, 40, 30, 20, 10]",
-          "explanation": "Array elements are reversed in-place"
-        }
-      ],
-      "hints": [
-        "Use two pointers: one at the start and one at the end. Swap elements and move pointers toward each other."
-      ],
-      "solution": {
-        "code": "void reverseArray(int *arr, int size) {\n    int *start = arr;\n    int *end = arr + size - 1;\n    \n    while (start < end) {\n        // Swap elements\n        int temp = *start;\n        *start = *end;\n        *end = temp;\n        \n        // Move pointers\n        start++;\n        end--;\n    }\n}",
-        "language": "c"
-      }
-    },
-    {
-      "id": 5,
-      "title": "String Substring Extraction",
-      "topic": "pointers",
-      "difficulty": "medium",
-      "points": 25,
-      "description": "Implement a function that extracts a substring from a string using pointers. The function should take source string, start index (inclusive), and end index (inclusive).",
-      "structDefinition": {
-        "code": "#define MAX_LEN 100\n\ntypedef struct {\n    char data[MAX_LEN];\n} String;\n\nString substring(String src, int start, int end);",
-        "language": "c"
-      },
-      "examples": [
-        {
-          "input": "String: \"hamburger\"\nStart: 4, End: 8",
-          "output": "Result: \"urger\"",
-          "explanation": "Characters from index 4 to 8 (inclusive)"
+          "input": "Student: \"John\", Grades: [85, 90, 78, 92, 88]",
+          "output": "Average: 86.6",
+          "explanation": "Sum of grades (433) divided by 5"
         },
         {
-          "input": "String: \"international\"\nStart: 0, End: 4",
-          "output": "Result: \"inter\"",
-          "explanation": "First 5 characters"
+          "input": "Student: \"Alice\", Grades: [95, 98, 100, 97, 96]",
+          "output": "Average: 97.2",
+          "explanation": "High performing student"
         }
       ],
       "hints": [
-        "Copy characters from src.data[start] to src.data[end] into result.data. Don't forget the null terminator!"
+        "Use the arrow operator (->) to access struct members through a pointer",
+        "Remember: student->grades[i] is the same as (*student).grades[i]"
       ],
       "solution": {
-        "code": "String substring(String src, int start, int end) {\n    String result;\n    int index = 0;\n    \n    for (int i = start; i <= end; i++) {\n        result.data[index] = src.data[i];\n        index++;\n    }\n    result.data[index] = '\\0';\n    \n    return result;\n}",
+        "code": "void calculateAverage(Student *student) {\n    int sum = 0;\n    for (int i = 0; i < 5; i++) {\n        sum += student->grades[i];\n    }\n    student->average = (float)sum / 5;\n}",
         "language": "c"
       }
     },
     {
-      "id": 6,
-      "title": "Employee Task Tracker",
-      "topic": "structs",
-      "difficulty": "hard",
-      "points": 30,
-      "description": "Create an employee management system that tracks tasks. Find the employee who completed the most tasks and return their name.",
-      "structDefinition": {
-        "code": "#define MAX_LEN 100\n\ntypedef struct {\n    char data[MAX_LEN];\n} String;\n\ntypedef struct {\n    int id;\n    String name;\n} Employee;\n\ntypedef struct {\n    int employee_id;\n    int tasksDone;\n} Report;\n\nString getTopEmployeeName(Employee* employees, int empCount, \n                         Report* reports, int reportCount);",
-        "language": "c"
-      },
-      "examples": [
-        {
-          "input": "Employees: [(101, \"Ronan\"), (102, \"Bob\"), (103, \"Clara\")]\nReports: [(101, 4), (103, 3)]",
-          "output": "Top Employee: \"Ronan\"",
-          "explanation": "Ronan completed 4 tasks, the maximum"
-        }
-      ],
-      "hints": [
-        "First find the maximum number of tasks from reports, then find the employee with that ID in the employees array."
-      ],
-      "solution": {
-        "code": "String getTopEmployeeName(Employee* employees, int empCount, \n                         Report* reports, int reportCount) {\n    // Find max tasks and employee ID\n    int maxTask = 0;\n    int employeeIdMaxTask = -1;\n    \n    for (int i = 0; i < reportCount; i++) {\n        Report report = reports[i];\n        if (report.tasksDone > maxTask) {\n            maxTask = report.tasksDone;\n            employeeIdMaxTask = report.employee_id;\n        }\n    }\n    \n    // Find employee name\n    String topEmployee;\n    bool found = false;\n    \n    for (int i = 0; i < empCount && !found; i++) {\n        Employee employee = employees[i];\n        if (employee.id == employeeIdMaxTask) {\n            topEmployee = employee.name;\n            found = true;\n        }\n    }\n    \n    return topEmployee;\n}",
-        "language": "c"
-      }
-    },
-    {
-      "id": 7,
-      "title": "Memory Pool Manager",
-      "topic": "pointers",
-      "difficulty": "hard",
+      "id": 12,
+      "title": "Linked List - Add to Front",
+      "topic": "linked-list",
+      "difficulty": "easy",
       "points": 35,
-      "description": "Implement a simple memory pool manager that allocates blocks from a fixed-size buffer. Track allocated blocks and implement allocation/deallocation functions.",
+      "description": "Implement a function that adds a new node to the front of a linked list. The function should take a double pointer to the head and the value to insert.",
       "structDefinition": {
-        "code": "#define POOL_SIZE 1024\n#define MAX_BLOCKS 50\n\ntypedef struct {\n    void* address;\n    size_t size;\n    bool allocated;\n} Block;\n\ntypedef struct {\n    char pool[POOL_SIZE];\n    Block blocks[MAX_BLOCKS];\n    int blockCount;\n} MemoryPool;\n\nvoid* allocateBlock(MemoryPool* pool, size_t size);\nvoid deallocateBlock(MemoryPool* pool, void* ptr);",
+        "code": "typedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nvoid addToFront(Node **head, int value);",
         "language": "c"
       },
       "examples": [
         {
-          "input": "Allocate 100 bytes\nAllocate 200 bytes\nDeallocate first block\nAllocate 50 bytes",
-          "output": "Block 1: Address 0x0000, Size 100\nBlock 2: Address 0x0064, Size 200\nBlock 1 freed\nBlock 3: Address 0x0000, Size 50",
-          "explanation": "Memory is reused after deallocation"
+          "input": "List: 2->3->4, Insert: 1",
+          "output": "List: 1->2->3->4",
+          "explanation": "New node with value 1 becomes the new head"
+        },
+        {
+          "input": "List: empty, Insert: 5",
+          "output": "List: 5",
+          "explanation": "First node in an empty list"
         }
       ],
       "hints": [
-        "Find the first available space in the pool that can fit the requested size. Keep track of allocated blocks to enable deallocation."
+        "Allocate memory for the new node using malloc",
+        "Make the new node point to the current head",
+        "Update the head pointer to point to the new node"
       ],
       "solution": {
-        "code": "void* allocateBlock(MemoryPool* pool, size_t size) {\n    // Find available space in pool\n    size_t currentPos = 0;\n    \n    for (int i = 0; i < pool->blockCount; i++) {\n        if (pool->blocks[i].allocated) {\n            size_t blockEnd = (char*)pool->blocks[i].address - pool->pool + \n                             pool->blocks[i].size;\n            if (blockEnd > currentPos) {\n                currentPos = blockEnd;\n            }\n        }\n    }\n    \n    // Check if enough space\n    if (currentPos + size > POOL_SIZE) {\n        return NULL;\n    }\n    \n    // Create new block\n    if (pool->blockCount < MAX_BLOCKS) {\n        pool->blocks[pool->blockCount].address = pool->pool + currentPos;\n        pool->blocks[pool->blockCount].size = size;\n        pool->blocks[pool->blockCount].allocated = true;\n        pool->blockCount++;\n        return pool->pool + currentPos;\n    }\n    \n    return NULL;\n}\n\nvoid deallocateBlock(MemoryPool* pool, void* ptr) {\n    for (int i = 0; i < pool->blockCount; i++) {\n        if (pool->blocks[i].address == ptr && pool->blocks[i].allocated) {\n            pool->blocks[i].allocated = false;\n            break;\n        }\n    }\n}",
+        "code": "void addToFront(Node **head, int value) {\n    Node *newNode = (Node*)malloc(sizeof(Node));\n    newNode->data = value;\n    newNode->next = *head;\n    *head = newNode;\n}",
         "language": "c"
       }
     },
     {
-      "id": 8,
-      "title": "Linked List Operations",
-      "topic": "pointers",
+      "id": 13,
+      "title": "Factorial Calculator",
+      "topic": "recursion",
+      "difficulty": "easy",
+      "points": 25,
+      "description": "Write a recursive function to calculate the factorial of a number. Handle the base case properly and avoid stack overflow for reasonable inputs.",
+      "structDefinition": {
+        "code": "int factorial(int n);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "n = 5",
+          "output": "120",
+          "explanation": "5! = 5 × 4 × 3 × 2 × 1 = 120"
+        },
+        {
+          "input": "n = 0",
+          "output": "1",
+          "explanation": "0! is defined as 1"
+        },
+        {
+          "input": "n = 7",
+          "output": "5040",
+          "explanation": "7! = 7 × 6 × 5 × 4 × 3 × 2 × 1"
+        }
+      ],
+      "hints": [
+        "Base case: factorial of 0 or 1 is 1",
+        "Recursive case: n * factorial(n-1)"
+      ],
+      "solution": {
+        "code": "int factorial(int n) {\n    if (n <= 1) {\n        return 1;\n    }\n    return n * factorial(n - 1);\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 14,
+      "title": "Binary Search Implementation",
+      "topic": "algorithms",
       "difficulty": "medium",
       "points": 40,
-      "description": "Implement a function that finds the middle node of a linked list using the two-pointer technique (slow and fast pointers).",
+      "description": "Implement binary search to find an element in a sorted array. Return the index if found, -1 otherwise. The function should be efficient with O(log n) complexity.",
       "structDefinition": {
-        "code": "typedef struct Node {\n    int data;\n    struct Node* next;\n} Node;\n\nNode* findMiddle(Node* head);",
+        "code": "int binarySearch(int arr[], int size, int target);",
         "language": "c"
       },
       "examples": [
         {
-          "input": "List: 1 -> 2 -> 3 -> 4 -> 5",
-          "output": "Middle node: 3",
-          "explanation": "The middle element of odd-length list"
+          "input": "Array: [1, 3, 5, 7, 9, 11], Target: 7",
+          "output": "Index: 3",
+          "explanation": "Element 7 is at index 3"
         },
         {
-          "input": "List: 1 -> 2 -> 3 -> 4",
-          "output": "Middle node: 3",
-          "explanation": "For even-length list, return second middle"
+          "input": "Array: [2, 4, 6, 8, 10], Target: 5",
+          "output": "Index: -1",
+          "explanation": "Element 5 not found in array"
+        },
+        {
+          "input": "Array: [10, 20, 30, 40, 50, 60, 70], Target: 10",
+          "output": "Index: 0",
+          "explanation": "First element"
         }
       ],
       "hints": [
-        "Use two pointers: slow moves one step, fast moves two steps. When fast reaches the end, slow will be at the middle."
+        "Use three pointers: left, right, and mid",
+        "Compare target with middle element and adjust search range",
+        "Make sure to handle the case when left > right"
       ],
       "solution": {
-        "code": "Node* findMiddle(Node* head) {\n    if (head == NULL || head->next == NULL) {\n        return head;\n    }\n    \n    Node* slow = head;\n    Node* fast = head;\n    \n    // Move fast pointer two steps and slow pointer one step\n    while (fast != NULL && fast->next != NULL) {\n        slow = slow->next;\n        fast = fast->next->next;\n    }\n    \n    return slow;\n}",
+        "code": "int binarySearch(int arr[], int size, int target) {\n    int left = 0;\n    int right = size - 1;\n    \n    while (left <= right) {\n        int mid = left + (right - left) / 2;\n        \n        if (arr[mid] == target) {\n            return mid;\n        }\n        \n        if (arr[mid] < target) {\n            left = mid + 1;\n        } else {\n            right = mid - 1;\n        }\n    }\n    \n    return -1;\n}",
         "language": "c"
       }
     },
     {
-      "id": 9,
-      "title": "Matrix Operations with Structs",
-      "topic": "structs",
+      "id": 15,
+      "title": "Game Inventory System",
+      "topic": "game-related",
+      "difficulty": "medium",
+      "points": 45,
+      "description": "Create an inventory system for a game. Implement functions to add items, remove items, and check if an item exists. Use a struct array with a maximum of 10 items.",
+      "structDefinition": {
+        "code": "typedef struct {\n    char name[30];\n    int quantity;\n} Item;\n\ntypedef struct {\n    Item items[10];\n    int count;\n} Inventory;\n\nbool addItem(Inventory *inv, const char *name, int quantity);\nbool removeItem(Inventory *inv, const char *name, int quantity);\nint getItemQuantity(Inventory *inv, const char *name);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Add: \"Sword\" x1, \"Potion\" x5\nRemove: \"Potion\" x2\nCheck: \"Potion\"",
+          "output": "Inventory: Sword x1, Potion x3\nPotion quantity: 3",
+          "explanation": "Items added and removed successfully"
+        },
+        {
+          "input": "Add: \"Shield\" x1 (inventory full)",
+          "output": "Return: false",
+          "explanation": "Cannot add when inventory is full"
+        }
+      ],
+      "hints": [
+        "Use strcmp to compare item names",
+        "Check if item already exists before adding",
+        "Handle edge cases like removing more than available"
+      ],
+      "solution": {
+        "code": "bool addItem(Inventory *inv, const char *name, int quantity) {\n    // Check if item exists\n    for (int i = 0; i < inv->count; i++) {\n        if (strcmp(inv->items[i].name, name) == 0) {\n            inv->items[i].quantity += quantity;\n            return true;\n        }\n    }\n    \n    // Add new item if space available\n    if (inv->count < 10) {\n        strcpy(inv->items[inv->count].name, name);\n        inv->items[inv->count].quantity = quantity;\n        inv->count++;\n        return true;\n    }\n    return false;\n}\n\nbool removeItem(Inventory *inv, const char *name, int quantity) {\n    for (int i = 0; i < inv->count; i++) {\n        if (strcmp(inv->items[i].name, name) == 0) {\n            if (inv->items[i].quantity >= quantity) {\n                inv->items[i].quantity -= quantity;\n                if (inv->items[i].quantity == 0) {\n                    // Remove item by shifting array\n                    for (int j = i; j < inv->count - 1; j++) {\n                        inv->items[j] = inv->items[j + 1];\n                    }\n                    inv->count--;\n                }\n                return true;\n            }\n            return false;\n        }\n    }\n    return false;\n}\n\nint getItemQuantity(Inventory *inv, const char *name) {\n    for (int i = 0; i < inv->count; i++) {\n        if (strcmp(inv->items[i].name, name) == 0) {\n            return inv->items[i].quantity;\n        }\n    }\n    return 0;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 16,
+      "title": "Bank Account Manager",
+      "topic": "real-world",
+      "difficulty": "medium",
+      "points": 40,
+      "description": "Create a banking system with Account structs. Implement deposit, withdraw, and transfer functions. Use pointers to modify account balances and validate transactions.",
+      "structDefinition": {
+        "code": "typedef struct {\n    int accountNumber;\n    char holder[50];\n    float balance;\n} Account;\n\nbool deposit(Account *account, float amount);\nbool withdraw(Account *account, float amount);\nbool transfer(Account *from, Account *to, float amount);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Account1: Balance $1000\nDeposit: $500\nWithdraw: $200",
+          "output": "New Balance: $1300",
+          "explanation": "1000 + 500 - 200 = 1300"
+        },
+        {
+          "input": "Transfer: $500 from Acc1($1000) to Acc2($100)",
+          "output": "Acc1: $500, Acc2: $600",
+          "explanation": "Money transferred successfully"
+        },
+        {
+          "input": "Withdraw: $2000 from balance $1000",
+          "output": "Return: false (Insufficient funds)",
+          "explanation": "Cannot withdraw more than balance"
+        }
+      ],
+      "hints": [
+        "Validate amounts are positive",
+        "Check sufficient balance before withdrawal",
+        "Transfer is withdraw + deposit"
+      ],
+      "solution": {
+        "code": "bool deposit(Account *account, float amount) {\n    if (amount <= 0) return false;\n    account->balance += amount;\n    return true;\n}\n\nbool withdraw(Account *account, float amount) {\n    if (amount <= 0 || amount > account->balance) return false;\n    account->balance -= amount;\n    return true;\n}\n\nbool transfer(Account *from, Account *to, float amount) {\n    if (amount <= 0 || amount > from->balance) return false;\n    from->balance -= amount;\n    to->balance += amount;\n    return true;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 17,
+      "title": "Swap Nodes in Pairs",
+      "topic": "linked-list",
       "difficulty": "medium",
       "points": 50,
-      "description": "Create a Matrix struct and implement matrix multiplication. The function should handle matrices of compatible dimensions.",
+      "description": "Given a linked list, swap every two adjacent nodes and return its head. You must solve the problem without modifying the values in the list's nodes.",
       "structDefinition": {
-        "code": "#define MAX_SIZE 10\n\ntypedef struct {\n    int data[MAX_SIZE][MAX_SIZE];\n    int rows;\n    int cols;\n} Matrix;\n\nMatrix multiplyMatrices(Matrix a, Matrix b);",
+        "code": "typedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode* swapPairs(Node *head);",
         "language": "c"
       },
       "examples": [
         {
-          "input": "Matrix A: 2x3\n[1 2 3]\n[4 5 6]\n\nMatrix B: 3x2\n[7 8]\n[9 10]\n[11 12]",
-          "output": "Result: 2x2\n[58 64]\n[139 154]",
-          "explanation": "Standard matrix multiplication"
+          "input": "List: 1->2->3->4",
+          "output": "List: 2->1->4->3",
+          "explanation": "Pairs (1,2) and (3,4) are swapped"
+        },
+        {
+          "input": "List: 1->2->3",
+          "output": "List: 2->1->3",
+          "explanation": "Last node has no pair, remains in place"
+        },
+        {
+          "input": "List: 5",
+          "output": "List: 5",
+          "explanation": "Single node, no swap needed"
         }
       ],
       "hints": [
-        "For matrix multiplication, A.cols must equal B.rows. Result[i][j] = sum of A[i][k] * B[k][j] for all k."
+        "Use a dummy node to simplify edge cases",
+        "Keep track of the previous node",
+        "Draw the pointer changes on paper first"
       ],
       "solution": {
-        "code": "Matrix multiplyMatrices(Matrix a, Matrix b) {\n    Matrix result;\n    result.rows = a.rows;\n    result.cols = b.cols;\n    \n    // Initialize result matrix with zeros\n    for (int i = 0; i < result.rows; i++) {\n        for (int j = 0; j < result.cols; j++) {\n            result.data[i][j] = 0;\n        }\n    }\n    \n    // Perform multiplication\n    for (int i = 0; i < a.rows; i++) {\n        for (int j = 0; j < b.cols; j++) {\n            for (int k = 0; k < a.cols; k++) {\n                result.data[i][j] += a.data[i][k] * b.data[k][j];\n            }\n        }\n    }\n    \n    return result;\n}",
+        "code": "Node* swapPairs(Node *head) {\n    if (!head || !head->next) return head;\n    \n    Node dummy;\n    dummy.next = head;\n    Node *prev = &dummy;\n    \n    while (prev->next && prev->next->next) {\n        Node *first = prev->next;\n        Node *second = prev->next->next;\n        \n        // Swap\n        first->next = second->next;\n        second->next = first;\n        prev->next = second;\n        \n        // Move to next pair\n        prev = first;\n    }\n    \n    return dummy.next;\n}",
         "language": "c"
       }
     },
     {
-      "id": 10,
-      "title": "Advanced String Comparison",
-      "topic": "pointers",
-      "difficulty": "hard",
-      "points": 55,
-      "description": "Implement a case-insensitive string comparison function that handles special characters correctly using unsigned char casting.",
+      "id": 18,
+      "title": "Fibonacci with Memoization",
+      "topic": "recursion",
+      "difficulty": "medium",
+      "points": 45,
+      "description": "Implement Fibonacci using recursion with memoization. Store calculated values in an array to avoid redundant calculations. Handle up to n=45.",
       "structDefinition": {
-        "code": "int strcasecmp_safe(const char *s1, const char *s2);\n\n// Helper function to convert to lowercase\nint tolower_safe(unsigned char c);",
+        "code": "int fibonacci(int n, int memo[]);",
         "language": "c"
       },
       "examples": [
         {
-          "input": "s1: \"Hello\"\ns2: \"HELLO\"",
-          "output": "0 (equal)",
-          "explanation": "Case-insensitive comparison"
+          "input": "n = 10",
+          "output": "55",
+          "explanation": "10th Fibonacci number"
         },
         {
-          "input": "s1: \"café\"\ns2: \"CAFÉ\"",
-          "output": "0 (equal)",
-          "explanation": "Handles accented characters"
+          "input": "n = 0",
+          "output": "0",
+          "explanation": "Base case"
+        },
+        {
+          "input": "n = 20",
+          "output": "6765",
+          "explanation": "Efficiently calculated with memoization"
         }
       ],
       "hints": [
-        "Cast to unsigned char to handle extended ASCII correctly. Convert both characters to lowercase before comparing."
+        "Initialize memo array with -1 to indicate uncalculated values",
+        "Check memo before calculating",
+        "Store result in memo before returning"
       ],
       "solution": {
-        "code": "int tolower_safe(unsigned char c) {\n    if (c >= 'A' && c <= 'Z') {\n        return c + ('a' - 'A');\n    }\n    return c;\n}\n\nint strcasecmp_safe(const char *s1, const char *s2) {\n    unsigned char *p1 = (unsigned char *)s1;\n    unsigned char *p2 = (unsigned char *)s2;\n    \n    while (*p1 && *p2) {\n        int c1 = tolower_safe(*p1);\n        int c2 = tolower_safe(*p2);\n        \n        if (c1 != c2) {\n            return c1 - c2;\n        }\n        \n        p1++;\n        p2++;\n    }\n    \n    return tolower_safe(*p1) - tolower_safe(*p2);\n}",
+        "code": "int fibonacci(int n, int memo[]) {\n    if (n <= 1) return n;\n    \n    if (memo[n] != -1) {\n        return memo[n];\n    }\n    \n    memo[n] = fibonacci(n - 1, memo) + fibonacci(n - 2, memo);\n    return memo[n];\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 19,
+      "title": "Quick Sort Implementation",
+      "topic": "algorithms",
+      "difficulty": "hard",
+      "points": 60,
+      "description": "Implement the Quick Sort algorithm using the last element as pivot. Sort the array in-place and handle arrays of any size efficiently.",
+      "structDefinition": {
+        "code": "void quickSort(int arr[], int low, int high);\nint partition(int arr[], int low, int high);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Array: [64, 34, 25, 12, 22, 11, 90]",
+          "output": "Sorted: [11, 12, 22, 25, 34, 64, 90]",
+          "explanation": "Array sorted in ascending order"
+        },
+        {
+          "input": "Array: [5, 2, 8, 1, 9]",
+          "output": "Sorted: [1, 2, 5, 8, 9]",
+          "explanation": "Smaller array example"
+        },
+        {
+          "input": "Array: [3, 3, 3, 3]",
+          "output": "Sorted: [3, 3, 3, 3]",
+          "explanation": "All elements equal"
+        }
+      ],
+      "hints": [
+        "Partition puts pivot in correct position",
+        "Elements smaller than pivot go left, larger go right",
+        "Recursively sort left and right subarrays"
+      ],
+      "solution": {
+        "code": "int partition(int arr[], int low, int high) {\n    int pivot = arr[high];\n    int i = low - 1;\n    \n    for (int j = low; j < high; j++) {\n        if (arr[j] < pivot) {\n            i++;\n            int temp = arr[i];\n            arr[i] = arr[j];\n            arr[j] = temp;\n        }\n    }\n    \n    int temp = arr[i + 1];\n    arr[i + 1] = arr[high];\n    arr[high] = temp;\n    \n    return i + 1;\n}\n\nvoid quickSort(int arr[], int low, int high) {\n    if (low < high) {\n        int pi = partition(arr, low, high);\n        quickSort(arr, low, pi - 1);\n        quickSort(arr, pi + 1, high);\n    }\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 20,
+      "title": "2D Game Map Navigator",
+      "topic": "game-related",
+      "difficulty": "hard",
+      "points": 65,
+      "description": "Create a game map system where a player can move on a 2D grid. Implement collision detection with walls, item pickup, and path finding to reach a target position.",
+      "structDefinition": {
+        "code": "typedef struct {\n    int x, y;\n} Position;\n\ntypedef struct {\n    char grid[10][10];  // '.' = empty, '#' = wall, 'I' = item, 'T' = target\n    Position player;\n    int itemsCollected;\n} GameMap;\n\nbool movePlayer(GameMap *map, char direction);\nbool findPath(GameMap *map, Position target, char path[], int maxSteps);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Move: 'R' (right)\nPlayer at (1,1), Wall at (2,1)",
+          "output": "Move failed, player stays at (1,1)",
+          "explanation": "Cannot move through walls"
+        },
+        {
+          "input": "Move: 'D' (down)\nPlayer at (1,1), Item at (1,2)",
+          "output": "Player at (1,2), itemsCollected++",
+          "explanation": "Player picks up item automatically"
+        },
+        {
+          "input": "Find path from (0,0) to (3,3)\nMap has walls",
+          "output": "Path: \"RRRDDD\" or similar valid path",
+          "explanation": "Returns shortest valid path avoiding walls"
+        }
+      ],
+      "hints": [
+        "For movement: check bounds and walls before moving",
+        "For pathfinding: use BFS or simple recursive approach",
+        "Remember to update player position and check for items"
+      ],
+      "solution": {
+        "code": "bool movePlayer(GameMap *map, char direction) {\n    Position newPos = map->player;\n    \n    switch (direction) {\n        case 'U': newPos.y--; break;\n        case 'D': newPos.y++; break;\n        case 'L': newPos.x--; break;\n        case 'R': newPos.x++; break;\n        default: return false;\n    }\n    \n    // Check bounds\n    if (newPos.x < 0 || newPos.x >= 10 || newPos.y < 0 || newPos.y >= 10) {\n        return false;\n    }\n    \n    // Check wall\n    if (map->grid[newPos.y][newPos.x] == '#') {\n        return false;\n    }\n    \n    // Check item\n    if (map->grid[newPos.y][newPos.x] == 'I') {\n        map->itemsCollected++;\n        map->grid[newPos.y][newPos.x] = '.';\n    }\n    \n    map->player = newPos;\n    return true;\n}\n\nbool findPath(GameMap *map, Position target, char path[], int maxSteps) {\n    // Simple recursive pathfinding\n    if (maxSteps <= 0) return false;\n    if (map->player.x == target.x && map->player.y == target.y) {\n        path[0] = '\\0';\n        return true;\n    }\n    \n    // Try each direction\n    char dirs[] = {'R', 'D', 'L', 'U'};\n    Position oldPos = map->player;\n    \n    for (int i = 0; i < 4; i++) {\n        if (movePlayer(map, dirs[i])) {\n            if (findPath(map, target, path + 1, maxSteps - 1)) {\n                path[0] = dirs[i];\n                return true;\n            }\n            map->player = oldPos; // Backtrack\n        }\n    }\n    \n    return false;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 21,
+      "title": "Dynamic Array Implementation",
+      "topic": "pointers",
+      "difficulty": "hard",
+      "points": 70,
+      "description": "Implement a dynamic array (like vector in C++) that can grow and shrink. Include functions for push, pop, and automatic resizing when capacity is reached.",
+      "structDefinition": {
+        "code": "typedef struct {\n    int *data;\n    int size;\n    int capacity;\n} DynamicArray;\n\nDynamicArray* createArray(int initialCapacity);\nvoid push(DynamicArray *arr, int value);\nint pop(DynamicArray *arr);\nvoid freeArray(DynamicArray *arr);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Create(2), Push(1), Push(2), Push(3)",
+          "output": "Array: [1, 2, 3], Capacity: 4",
+          "explanation": "Capacity doubled from 2 to 4 when needed"
+        },
+        {
+          "input": "Pop() three times",
+          "output": "Returns: 3, 2, 1",
+          "explanation": "LIFO order"
+        },
+        {
+          "input": "Push 10 elements to array with capacity 1",
+          "output": "Final capacity: 16",
+          "explanation": "Doubles: 1→2→4→8→16"
+        }
+      ],
+      "hints": [
+        "Double capacity when size equals capacity",
+        "Use realloc to resize the data array",
+        "Remember to free memory to avoid leaks"
+      ],
+      "solution": {
+        "code": "DynamicArray* createArray(int initialCapacity) {\n    DynamicArray *arr = (DynamicArray*)malloc(sizeof(DynamicArray));\n    arr->data = (int*)malloc(initialCapacity * sizeof(int));\n    arr->size = 0;\n    arr->capacity = initialCapacity;\n    return arr;\n}\n\nvoid push(DynamicArray *arr, int value) {\n    if (arr->size == arr->capacity) {\n        arr->capacity *= 2;\n        arr->data = (int*)realloc(arr->data, arr->capacity * sizeof(int));\n    }\n    arr->data[arr->size++] = value;\n}\n\nint pop(DynamicArray *arr) {\n    if (arr->size == 0) return -1; // Error value\n    return arr->data[--arr->size];\n}\n\nvoid freeArray(DynamicArray *arr) {\n    free(arr->data);\n    free(arr);\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 22,
+      "title": "Binary Tree Height",
+      "topic": "recursion",
+      "difficulty": "medium",
+      "points": 50,
+      "description": "Calculate the height of a binary tree recursively. The height is the number of edges on the longest path from root to leaf.",
+      "structDefinition": {
+        "code": "typedef struct TreeNode {\n    int data;\n    struct TreeNode *left;\n    struct TreeNode *right;\n} TreeNode;\n\nint treeHeight(TreeNode *root);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Tree:\n    1\n   / \\\n  2   3\n / \\\n4   5",
+          "output": "Height: 2",
+          "explanation": "Longest path: 1→2→4 (2 edges)"
+        },
+        {
+          "input": "Tree: NULL",
+          "output": "Height: -1",
+          "explanation": "Empty tree has height -1"
+        },
+        {
+          "input": "Tree: Single node (5)",
+          "output": "Height: 0",
+          "explanation": "No edges from root to itself"
+        }
+      ],
+      "hints": [
+        "Height = 1 + max(leftHeight, rightHeight)",
+        "Base case: NULL node has height -1",
+        "Use recursion on left and right subtrees"
+      ],
+      "solution": {
+        "code": "int treeHeight(TreeNode *root) {\n    if (root == NULL) {\n        return -1;\n    }\n    \n    int leftHeight = treeHeight(root->left);\n    int rightHeight = treeHeight(root->right);\n    \n    return 1 + (leftHeight > rightHeight ? leftHeight : rightHeight);\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 23,
+      "title": "Insertion Sort on Linked List",
+      "topic": "algorithms",
+      "difficulty": "hard",
+      "points": 55,
+      "description": "Sort a linked list using insertion sort algorithm. You must manipulate pointers to rearrange nodes, not just swap values.",
+      "structDefinition": {
+        "code": "typedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode* insertionSortList(Node *head);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "List: 4->2->1->3",
+          "output": "Sorted: 1->2->3->4",
+          "explanation": "Nodes rearranged in ascending order"
+        },
+        {
+          "input": "List: -1->5->3->4->0",
+          "output": "Sorted: -1->0->3->4->5",
+          "explanation": "Handles negative numbers"
+        },
+        {
+          "input": "List: 1",
+          "output": "Sorted: 1",
+          "explanation": "Single element already sorted"
+        }
+      ],
+      "hints": [
+        "Create a dummy head for the sorted list",
+        "Take nodes from original list one by one",
+        "Insert each node at correct position in sorted list"
+      ],
+      "solution": {
+        "code": "Node* insertionSortList(Node *head) {\n    if (!head) return NULL;\n    \n    Node dummy = {0, NULL};\n    Node *current = head;\n    \n    while (current) {\n        Node *next = current->next;\n        Node *pos = &dummy;\n        \n        // Find insertion position\n        while (pos->next && pos->next->data < current->data) {\n            pos = pos->next;\n        }\n        \n        // Insert current node\n        current->next = pos->next;\n        pos->next = current;\n        \n        current = next;\n    }\n    \n    return dummy.next;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 24,
+      "title": "Memory Pool Allocator",
+      "topic": "pointers",
+      "difficulty": "hard",
+      "points": 65,
+      "description": "Create a simple memory pool that pre-allocates a large block and serves smaller allocations from it. This is more efficient than multiple malloc calls.",
+      "structDefinition": {
+        "code": "typedef struct {\n    char *pool;      // The memory pool\n    size_t size;     // Total size\n    size_t used;     // Bytes used\n} MemPool;\n\nMemPool* createPool(size_t size);\nvoid* poolAlloc(MemPool *pool, size_t bytes);\nvoid resetPool(MemPool *pool);\nvoid destroyPool(MemPool *pool);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Create pool(1000)\nAlloc(100), Alloc(200)",
+          "output": "Used: 300 bytes\nRemaining: 700 bytes",
+          "explanation": "Sequential allocation from pool"
+        },
+        {
+          "input": "Alloc(2000) from pool(1000)",
+          "output": "Returns: NULL",
+          "explanation": "Request exceeds pool capacity"
+        },
+        {
+          "input": "Reset pool after using 500 bytes",
+          "output": "Used: 0 bytes",
+          "explanation": "Pool ready for reuse"
+        }
+      ],
+      "hints": [
+        "Keep track of current position in pool",
+        "Align allocations to word boundaries for performance",
+        "Reset just sets 'used' back to 0"
+      ],
+      "solution": {
+        "code": "MemPool* createPool(size_t size) {\n    MemPool *pool = (MemPool*)malloc(sizeof(MemPool));\n    pool->pool = (char*)malloc(size);\n    pool->size = size;\n    pool->used = 0;\n    return pool;\n}\n\nvoid* poolAlloc(MemPool *pool, size_t bytes) {\n    // Align to 8 bytes\n    bytes = (bytes + 7) & ~7;\n    \n    if (pool->used + bytes > pool->size) {\n        return NULL;\n    }\n    \n    void *ptr = pool->pool + pool->used;\n    pool->used += bytes;\n    return ptr;\n}\n\nvoid resetPool(MemPool *pool) {\n    pool->used = 0;\n}\n\nvoid destroyPool(MemPool *pool) {\n    free(pool->pool);\n    free(pool);\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 25,
+      "title": "Reverse Linked List (Recursive)",
+      "topic": "linked-list",
+      "difficulty": "medium",
+      "points": 45,
+      "description": "Reverse a linked list using recursion. This is trickier than the iterative approach but great for understanding recursive pointer manipulation.",
+      "structDefinition": {
+        "code": "typedef struct Node {\n    int data;\n    struct Node *next;\n} Node;\n\nNode* reverseListRecursive(Node *head);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "List: 1->2->3->4->5",
+          "output": "Reversed: 5->4->3->2->1",
+          "explanation": "All links reversed"
+        },
+        {
+          "input": "List: 1->2",
+          "output": "Reversed: 2->1",
+          "explanation": "Two element list"
+        },
+        {
+          "input": "List: NULL",
+          "output": "Reversed: NULL",
+          "explanation": "Empty list remains empty"
+        }
+      ],
+      "hints": [
+        "Base case: if head is NULL or has no next",
+        "Recursive case: reverse the rest, then fix current node",
+        "The last node becomes the new head"
+      ],
+      "solution": {
+        "code": "Node* reverseListRecursive(Node *head) {\n    // Base cases\n    if (head == NULL || head->next == NULL) {\n        return head;\n    }\n    \n    // Reverse the rest of the list\n    Node *newHead = reverseListRecursive(head->next);\n    \n    // Put current node at the end\n    head->next->next = head;\n    head->next = NULL;\n    \n    return newHead;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 26,
+      "title": "Contact Management System",
+      "topic": "real-world",
+      "difficulty": "hard",
+      "points": 75,
+      "description": "Build a contact management system that stores contacts, searches by name or phone, and sorts contacts alphabetically. Use dynamic memory for the contact list.",
+      "structDefinition": {
+        "code": "typedef struct {\n    char name[50];\n    char phone[20];\n    char email[50];\n} Contact;\n\ntypedef struct {\n    Contact *contacts;\n    int count;\n    int capacity;\n} ContactList;\n\nContactList* createContactList();\nbool addContact(ContactList *list, const char *name, const char *phone, const char *email);\nContact* searchByName(ContactList *list, const char *name);\nvoid sortContacts(ContactList *list);\nvoid freeContactList(ContactList *list);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Add: John Doe, 555-1234, john@email.com\nAdd: Alice Smith, 555-5678, alice@email.com\nSort",
+          "output": "Contacts:\n1. Alice Smith\n2. John Doe",
+          "explanation": "Sorted alphabetically by name"
+        },
+        {
+          "input": "Search: \"John\"",
+          "output": "Found: John Doe, 555-1234",
+          "explanation": "Partial name search"
+        },
+        {
+          "input": "Add 50 contacts to list with capacity 10",
+          "output": "Success: capacity auto-expanded",
+          "explanation": "Dynamic array grows as needed"
+        }
+      ],
+      "hints": [
+        "Use dynamic array pattern from earlier",
+        "strcasecmp for case-insensitive sorting",
+        "strstr for partial name search"
+      ],
+      "solution": {
+        "code": "ContactList* createContactList() {\n    ContactList *list = (ContactList*)malloc(sizeof(ContactList));\n    list->contacts = (Contact*)malloc(10 * sizeof(Contact));\n    list->count = 0;\n    list->capacity = 10;\n    return list;\n}\n\nbool addContact(ContactList *list, const char *name, const char *phone, const char *email) {\n    if (list->count == list->capacity) {\n        list->capacity *= 2;\n        list->contacts = (Contact*)realloc(list->contacts, list->capacity * sizeof(Contact));\n    }\n    \n    Contact *c = &list->contacts[list->count];\n    strncpy(c->name, name, 49);\n    strncpy(c->phone, phone, 19);\n    strncpy(c->email, email, 49);\n    list->count++;\n    return true;\n}\n\nContact* searchByName(ContactList *list, const char *name) {\n    for (int i = 0; i < list->count; i++) {\n        if (strstr(list->contacts[i].name, name) != NULL) {\n            return &list->contacts[i];\n        }\n    }\n    return NULL;\n}\n\nvoid sortContacts(ContactList *list) {\n    for (int i = 0; i < list->count - 1; i++) {\n        for (int j = 0; j < list->count - i - 1; j++) {\n            if (strcmp(list->contacts[j].name, list->contacts[j + 1].name) > 0) {\n                Contact temp = list->contacts[j];\n                list->contacts[j] = list->contacts[j + 1];\n                list->contacts[j + 1] = temp;\n            }\n        }\n    }\n}\n\nvoid freeContactList(ContactList *list) {\n    free(list->contacts);\n    free(list);\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 27,
+      "title": "Merge Sort for Arrays",
+      "topic": "algorithms",
+      "difficulty": "hard",
+      "points": 60,
+      "description": "Implement merge sort algorithm that divides the array into halves, sorts them recursively, and merges them back. Use a temporary array for merging.",
+      "structDefinition": {
+        "code": "void mergeSort(int arr[], int left, int right);\nvoid merge(int arr[], int left, int mid, int right);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Array: [38, 27, 43, 3, 9, 82, 10]",
+          "output": "Sorted: [3, 9, 10, 27, 38, 43, 82]",
+          "explanation": "Divide-conquer-merge approach"
+        },
+        {
+          "input": "Array: [5, 2, 4, 6, 1, 3]",
+          "output": "Process:\n[5,2,4] [6,1,3]\n[5] [2,4] [6] [1,3]\n[5] [2] [4] [6] [1] [3]\nMerge back: [1,2,3,4,5,6]",
+          "explanation": "Shows the divide and merge process"
+        },
+        {
+          "input": "Array: [1]",
+          "output": "Sorted: [1]",
+          "explanation": "Single element already sorted"
+        }
+      ],
+      "hints": [
+        "Base case: left >= right",
+        "Find mid point: (left + right) / 2",
+        "Need temporary array in merge function"
+      ],
+      "solution": {
+        "code": "void merge(int arr[], int left, int mid, int right) {\n    int n1 = mid - left + 1;\n    int n2 = right - mid;\n    \n    int *L = (int*)malloc(n1 * sizeof(int));\n    int *R = (int*)malloc(n2 * sizeof(int));\n    \n    for (int i = 0; i < n1; i++)\n        L[i] = arr[left + i];\n    for (int j = 0; j < n2; j++)\n        R[j] = arr[mid + 1 + j];\n    \n    int i = 0, j = 0, k = left;\n    \n    while (i < n1 && j < n2) {\n        if (L[i] <= R[j]) {\n            arr[k] = L[i];\n            i++;\n        } else {\n            arr[k] = R[j];\n            j++;\n        }\n        k++;\n    }\n    \n    while (i < n1) {\n        arr[k] = L[i];\n        i++;\n        k++;\n    }\n    \n    while (j < n2) {\n        arr[k] = R[j];\n        j++;\n        k++;\n    }\n    \n    free(L);\n    free(R);\n}\n\nvoid mergeSort(int arr[], int left, int right) {\n    if (left < right) {\n        int mid = left + (right - left) / 2;\n        \n        mergeSort(arr, left, mid);\n        mergeSort(arr, mid + 1, right);\n        \n        merge(arr, left, mid, right);\n    }\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 28,
+      "title": "Text-Based RPG Battle System",
+      "topic": "game-related",
+      "difficulty": "hard",
+      "points": 85,
+      "description": "Create a complete RPG battle system with multiple characters, skills, and turn-based combat. Include critical hits, defense, and special abilities.",
+      "structDefinition": {
+        "code": "typedef struct {\n    char name[30];\n    int hp, maxHp;\n    int mp, maxMp;\n    int attack, defense, speed;\n    int level;\n} Character;\n\ntypedef struct {\n    char name[30];\n    int damage;\n    int mpCost;\n    bool isAOE;  // Area of Effect\n} Skill;\n\ntypedef struct {\n    Character *team1[3];\n    Character *team2[3];\n    int turn;\n} Battle;\n\nvoid initBattle(Battle *battle, Character team1[], Character team2[]);\nbool executeAction(Battle *battle, int actorIndex, int targetIndex, Skill *skill);\nint checkBattleStatus(Battle *battle);  // 0=ongoing, 1=team1 wins, 2=team2 wins",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Hero attacks Goblin\nATK: 50, DEF: 10\nRoll: Normal hit",
+          "output": "Damage: 40\nGoblin HP: 60/100",
+          "explanation": "Damage = ATK - DEF"
+        },
+        {
+          "input": "Mage uses Fireball (AOE)\nTargets: 3 enemies\nMP Cost: 20",
+          "output": "All enemies take 30 damage\nMage MP: 30/50",
+          "explanation": "AOE hits all enemies"
+        },
+        {
+          "input": "Speed: Hero(15), Goblin(10), Mage(12)\nTurn order calculation",
+          "output": "Order: Hero → Mage → Goblin",
+          "explanation": "Higher speed acts first"
+        },
+        {
+          "input": "Critical hit roll (10% chance)",
+          "output": "Critical! Damage × 1.5",
+          "explanation": "Random critical system"
+        }
+      ],
+      "hints": [
+        "Sort characters by speed for turn order",
+        "Check MP before using skills",
+        "Use rand() % 100 < 10 for 10% critical chance",
+        "AOE skills target all enemies"
+      ],
+      "solution": {
+        "code": "void initBattle(Battle *battle, Character team1[], Character team2[]) {\n    for (int i = 0; i < 3; i++) {\n        battle->team1[i] = &team1[i];\n        battle->team2[i] = &team2[i];\n    }\n    battle->turn = 0;\n}\n\nbool executeAction(Battle *battle, int actorIndex, int targetIndex, Skill *skill) {\n    Character *actor = (battle->turn % 2 == 0) ? battle->team1[actorIndex] : battle->team2[actorIndex];\n    \n    // Check MP for skill\n    if (skill && actor->mp < skill->mpCost) {\n        return false;\n    }\n    \n    // Deduct MP\n    if (skill) {\n        actor->mp -= skill->mpCost;\n    }\n    \n    // Calculate damage\n    int baseDamage = skill ? skill->damage : actor->attack;\n    \n    // Critical hit chance (10%)\n    bool critical = (rand() % 100) < 10;\n    if (critical) {\n        baseDamage = baseDamage * 3 / 2;\n    }\n    \n    // Apply damage\n    if (skill && skill->isAOE) {\n        // Hit all enemies\n        Character **enemies = (battle->turn % 2 == 0) ? battle->team2 : battle->team1;\n        for (int i = 0; i < 3; i++) {\n            if (enemies[i]->hp > 0) {\n                int damage = baseDamage - enemies[i]->defense;\n                if (damage < 1) damage = 1;\n                enemies[i]->hp -= damage;\n                if (enemies[i]->hp < 0) enemies[i]->hp = 0;\n            }\n        }\n    } else {\n        // Single target\n        Character *target = (battle->turn % 2 == 0) ? battle->team2[targetIndex] : battle->team1[targetIndex];\n        int damage = baseDamage - target->defense;\n        if (damage < 1) damage = 1;\n        target->hp -= damage;\n        if (target->hp < 0) target->hp = 0;\n    }\n    \n    battle->turn++;\n    return true;\n}\n\nint checkBattleStatus(Battle *battle) {\n    bool team1Alive = false, team2Alive = false;\n    \n    for (int i = 0; i < 3; i++) {\n        if (battle->team1[i]->hp > 0) team1Alive = true;\n        if (battle->team2[i]->hp > 0) team2Alive = true;\n    }\n    \n    if (!team2Alive) return 1;  // Team 1 wins\n    if (!team1Alive) return 2;  // Team 2 wins\n    return 0;  // Battle continues\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 29,
+      "title": "File-Based Student Database",
+      "topic": "real-world",
+      "difficulty": "hard",
+      "points": 80,
+      "description": "Create a student database system that saves/loads from files. Include functions to add students, calculate GPA, generate reports, and persist data between program runs.",
+      "structDefinition": {
+        "code": "typedef struct {\n    int id;\n    char name[50];\n    char major[30];\n    float grades[10];  // Up to 10 courses\n    int courseCount;\n    float gpa;\n} Student;\n\ntypedef struct {\n    Student *students;\n    int count;\n    int nextId;\n} Database;\n\nDatabase* loadDatabase(const char *filename);\nbool saveDatabase(Database *db, const char *filename);\nint addStudent(Database *db, const char *name, const char *major);\nbool addGrade(Database *db, int studentId, float grade);\nvoid generateReport(Database *db, const char *reportFile);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Load database.dat\nAdd: \"John Doe\", \"Computer Science\"\nAdd grades: 85, 90, 78\nSave",
+          "output": "Student ID: 1001\nGPA: 2.93\nData saved to database.dat",
+          "explanation": "Persistent storage across runs"
+        },
+        {
+          "input": "Generate report for all students",
+          "output": "STUDENT REPORT\n==============\nID: 1001 - John Doe\nMajor: Computer Science\nGPA: 2.93\nGrades: 85, 90, 78\n\nClass Average GPA: 3.15",
+          "explanation": "Formatted report generation"
+        },
+        {
+          "input": "Load non-existent file",
+          "output": "New database created\nNext ID: 1000",
+          "explanation": "Handles missing files gracefully"
+        },
+        {
+          "input": "Add 100 students",
+          "output": "Database expanded automatically",
+          "explanation": "Dynamic memory management"
+        }
+      ],
+      "hints": [
+        "Use binary files for efficient storage",
+        "GPA calculation: A=4.0, B=3.0, C=2.0, D=1.0, F=0.0",
+        "fwrite/fread for struct serialization",
+        "Always check file operations for errors"
+      ],
+      "solution": {
+        "code": "Database* loadDatabase(const char *filename) {\n    Database *db = (Database*)malloc(sizeof(Database));\n    FILE *file = fopen(filename, \"rb\");\n    \n    if (file) {\n        fread(&db->count, sizeof(int), 1, file);\n        fread(&db->nextId, sizeof(int), 1, file);\n        \n        db->students = (Student*)malloc(db->count * sizeof(Student));\n        fread(db->students, sizeof(Student), db->count, file);\n        fclose(file);\n    } else {\n        // New database\n        db->students = (Student*)malloc(10 * sizeof(Student));\n        db->count = 0;\n        db->nextId = 1000;\n    }\n    \n    return db;\n}\n\nbool saveDatabase(Database *db, const char *filename) {\n    FILE *file = fopen(filename, \"wb\");\n    if (!file) return false;\n    \n    fwrite(&db->count, sizeof(int), 1, file);\n    fwrite(&db->nextId, sizeof(int), 1, file);\n    fwrite(db->students, sizeof(Student), db->count, file);\n    fclose(file);\n    return true;\n}\n\nint addStudent(Database *db, const char *name, const char *major) {\n    // Expand if needed\n    if (db->count % 10 == 0 && db->count > 0) {\n        db->students = (Student*)realloc(db->students, (db->count + 10) * sizeof(Student));\n    }\n    \n    Student *s = &db->students[db->count];\n    s->id = db->nextId++;\n    strncpy(s->name, name, 49);\n    strncpy(s->major, major, 29);\n    s->courseCount = 0;\n    s->gpa = 0.0;\n    db->count++;\n    \n    return s->id;\n}\n\nbool addGrade(Database *db, int studentId, float grade) {\n    for (int i = 0; i < db->count; i++) {\n        if (db->students[i].id == studentId) {\n            Student *s = &db->students[i];\n            if (s->courseCount < 10) {\n                s->grades[s->courseCount++] = grade;\n                \n                // Recalculate GPA\n                float sum = 0;\n                for (int j = 0; j < s->courseCount; j++) {\n                    float g = s->grades[j];\n                    if (g >= 90) sum += 4.0;\n                    else if (g >= 80) sum += 3.0;\n                    else if (g >= 70) sum += 2.0;\n                    else if (g >= 60) sum += 1.0;\n                }\n                s->gpa = sum / s->courseCount;\n                return true;\n            }\n        }\n    }\n    return false;\n}\n\nvoid generateReport(Database *db, const char *reportFile) {\n    FILE *file = fopen(reportFile, \"w\");\n    if (!file) return;\n    \n    fprintf(file, \"STUDENT DATABASE REPORT\\n\");\n    fprintf(file, \"======================\\n\\n\");\n    \n    float totalGPA = 0;\n    for (int i = 0; i < db->count; i++) {\n        Student *s = &db->students[i];\n        fprintf(file, \"ID: %d - %s\\n\", s->id, s->name);\n        fprintf(file, \"Major: %s\\n\", s->major);\n        fprintf(file, \"GPA: %.2f\\n\", s->gpa);\n        fprintf(file, \"Grades: \");\n        \n        for (int j = 0; j < s->courseCount; j++) {\n            fprintf(file, \"%.0f%s\", s->grades[j], j < s->courseCount-1 ? \", \" : \"\");\n        }\n        fprintf(file, \"\\n\\n\");\n        totalGPA += s->gpa;\n    }\n    \n    if (db->count > 0) {\n        fprintf(file, \"Overall Average GPA: %.2f\\n\", totalGPA / db->count);\n    }\n    \n    fclose(file);\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 30,
+      "title": "Mini Compiler - Expression Evaluator",
+      "topic": "algorithms",
+      "difficulty": "hard",
+      "points": 90,
+      "description": "Build a simple expression evaluator that can parse and evaluate mathematical expressions with proper operator precedence. Support +, -, *, /, and parentheses.",
+      "structDefinition": {
+        "code": "typedef struct {\n    char expression[100];\n    int position;\n} Parser;\n\nint evaluate(const char *expression);\nint parseExpression(Parser *p);\nint parseTerm(Parser *p);\nint parseFactor(Parser *p);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Expression: \"2 + 3 * 4\"",
+          "output": "Result: 14",
+          "explanation": "Multiplication has higher precedence"
+        },
+        {
+          "input": "Expression: \"(2 + 3) * 4\"",
+          "output": "Result: 20",
+          "explanation": "Parentheses evaluated first"
+        },
+        {
+          "input": "Expression: \"10 / 2 - 3\"",
+          "output": "Result: 2",
+          "explanation": "Left to right: 10/2=5, 5-3=2"
+        },
+        {
+          "input": "Expression: \"((1 + 2) * (3 + 4))\"",
+          "output": "Result: 21",
+          "explanation": "Nested parentheses: 3 * 7"
+        },
+        {
+          "input": "Expression: \"100 / 10 / 2\"",
+          "output": "Result: 5",
+          "explanation": "Left associative: (100/10)/2"
+        }
+      ],
+      "hints": [
+        "Use recursive descent parsing",
+        "Expression → Term ((+|-) Term)*",
+        "Term → Factor ((*|/) Factor)*",
+        "Factor → Number | (Expression)"
+      ],
+      "solution": {
+        "code": "int evaluate(const char *expression) {\n    Parser p;\n    strcpy(p.expression, expression);\n    p.position = 0;\n    return parseExpression(&p);\n}\n\nvoid skipSpaces(Parser *p) {\n    while (p->expression[p->position] == ' ') {\n        p->position++;\n    }\n}\n\nint parseNumber(Parser *p) {\n    skipSpaces(p);\n    int num = 0;\n    while (isdigit(p->expression[p->position])) {\n        num = num * 10 + (p->expression[p->position] - '0');\n        p->position++;\n    }\n    return num;\n}\n\nint parseFactor(Parser *p) {\n    skipSpaces(p);\n    \n    if (p->expression[p->position] == '(') {\n        p->position++; // skip '('\n        int result = parseExpression(p);\n        skipSpaces(p);\n        p->position++; // skip ')'\n        return result;\n    }\n    \n    return parseNumber(p);\n}\n\nint parseTerm(Parser *p) {\n    int left = parseFactor(p);\n    \n    while (1) {\n        skipSpaces(p);\n        char op = p->expression[p->position];\n        \n        if (op == '*' || op == '/') {\n            p->position++;\n            int right = parseFactor(p);\n            if (op == '*') {\n                left = left * right;\n            } else {\n                left = left / right;\n            }\n        } else {\n            break;\n        }\n    }\n    \n    return left;\n}\n\nint parseExpression(Parser *p) {\n    int left = parseTerm(p);\n    \n    while (1) {\n        skipSpaces(p);\n        char op = p->expression[p->position];\n        \n        if (op == '+' || op == '-') {\n            p->position++;\n            int right = parseTerm(p);\n            if (op == '+') {\n                left = left + right;\n            } else {\n                left = left - right;\n            }\n        } else {\n            break;\n        }\n    }\n    \n    return left;\n}",
         "language": "c"
       }
     }
-  ]
-  }
   ]
 }
