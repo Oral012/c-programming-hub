@@ -8,13 +8,37 @@ let currentFilters = {
     topic: 'all',
     search: ''
 };
+// User Profile Functions
+function getUserName() {
+    let userName = localStorage.getItem('userName');
+    if (!userName) {
+        userName = prompt('Welcome! Please enter your name:') || 'Guest';
+        localStorage.setItem('userName', userName);
+    }
+    const userNameElement = document.getElementById('userName');
+    if (userNameElement) {
+        userNameElement.textContent = userName;
+    }
+    return userName;
+}
 
+function changeUserName() {
+    const newName = prompt('Enter your name:');
+    if (newName && newName.trim()) {
+        localStorage.setItem('userName', newName.trim());
+        document.getElementById('userName').textContent = newName.trim();
+        if (window.mainUtils && window.mainUtils.showNotification) {
+            window.mainUtils.showNotification(`Welcome, ${newName.trim()}!`, 'success');
+        }
+    }
+}
 // Password for solutions (same as before)
 const SOLUTION_PASSWORD = 'ronanIsTheBest';
 let passwordVerified = false;
 
 // Load exercises from JSON when page loads
 document.addEventListener('DOMContentLoaded', async function() {
+     getUserName();
     await loadExercises();
     initializeFilters();
     initializeSearch();
@@ -35,7 +59,44 @@ async function loadExercises() {
         showError('Failed to load exercises. Please refresh the page.');
     }
 }
-
+async function getAIHint(exerciseId) {
+    const exercise = allExercises.find(e => e.id === exerciseId);
+    const userCode = document.getElementById(`code-${exerciseId}`).value;
+    
+    if (!userCode.trim()) {
+        window.mainUtils.showNotification('Write some code first to get a personalized hint!', 'info');
+        return;
+    }
+    
+    // Show loading state
+    const hintBox = document.getElementById(`hint-${exerciseId}`);
+    hintBox.innerHTML = '<div class="loading-feedback"><div class="spinner"></div><p>🤖 AI is analyzing your code...</p></div>';
+    hintBox.classList.add('show');
+    
+    try {
+        const response = await fetch('/api/get-hint', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                exerciseId: exerciseId,
+                userCode: userCode,
+                problemDescription: exercise.description,
+                hints: exercise.hints
+            })
+        });
+        
+        const data = await response.json();
+        
+        hintBox.innerHTML = `
+            <h5>🤖 AI Hint:</h5>
+            <p>${data.hint}</p>
+            ${data.encouragement ? `<p style="color: var(--success); margin-top: 0.5rem;">💪 ${data.encouragement}</p>` : ''}
+        `;
+        
+    } catch (error) {
+        hintBox.innerHTML = '<p>❌ Failed to get AI hint. Try the regular hints!</p>';
+    }
+}
 // Submit solution to AI for checking
 async function submitSolution(exerciseId) {
     const exercise = allExercises.find(e => e.id === exerciseId);
@@ -81,7 +142,8 @@ async function submitSolution(exerciseId) {
                 expectedSolution: exercise.solution.code,
                 problemDescription: exercise.description,
                 maxPoints: exercise.points,
-                difficulty: exercise.difficulty
+                difficulty: exercise.difficulty,
+                userName: getUserName()
             })
         });
         
@@ -276,8 +338,11 @@ function createExerciseCard(exercise) {
             ${examplesHTML}
             
             <div class="exercise-actions">
-                <button class="btn btn-primary" onclick="exerciseFunctions.toggleHint(${exercise.id})">
+                            <button class="btn btn-primary" onclick="exerciseFunctions.toggleHint(${exercise.id})">
                     <span id="hint-btn-${exercise.id}">Show Hint</span>
+                </button>
+                <button class="btn btn-primary" onclick="exerciseFunctions.getAIHint(${exercise.id})">
+                    🤖 Get AI Hint
                 </button>
                 <button class="btn btn-primary solution-toggle" onclick="exerciseFunctions.toggleSolution(${exercise.id})">
                     <span id="solution-btn-${exercise.id}">Show Solution 🔒</span>
@@ -601,7 +666,9 @@ window.exerciseFunctions = {
     toggleHint,
     toggleSolution,
     markExerciseCompleted,
-    clearProgress
+    clearProgress,
+    changeUserName,
+    getAIHint
 };
 
 // Make submitSolution globally available

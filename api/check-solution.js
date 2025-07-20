@@ -20,7 +20,7 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { exerciseId, userCode, expectedSolution, problemDescription, maxPoints, difficulty } = req.body;
+  const { exerciseId, userCode, expectedSolution, problemDescription, maxPoints, difficulty, userName } = req.body;
 
   if (!userCode || !expectedSolution || !problemDescription) {
     return res.status(400).json({ error: 'Missing required fields' });
@@ -207,6 +207,7 @@ try {
     exercise_id: exerciseId,
     exercise_name: `Exercise ${exerciseId}`, // You can enhance this later
     user_code: userCode,
+     user_name: userName || 'Guest',
     score: feedback.score,
     max_score: feedback.maxScore,
     percentage: feedback.percentage,
