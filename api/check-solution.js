@@ -1,3 +1,6 @@
+// Get Supabase credentials from environment variables
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Credentials', true);
@@ -198,6 +201,39 @@ Respond in this exact JSON format:
     feedback.maxScore = maxPoints || 100;
 
     console.log('Sending feedback:', feedback);
+    // Save submission to Supabase
+try {
+  const submissionData = {
+    exercise_id: exerciseId,
+    exercise_name: `Exercise ${exerciseId}`, // You can enhance this later
+    user_code: userCode,
+    score: feedback.score,
+    max_score: feedback.maxScore,
+    percentage: feedback.percentage,
+    ai_feedback: feedback,
+    ip_address: req.headers['x-forwarded-for'] || 'unknown',
+    user_agent: req.headers['user-agent'] || 'unknown'
+  };
+
+  const response = await fetch(`${SUPABASE_URL}/rest/v1/submissions`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': SUPABASE_ANON_KEY,
+      'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+    },
+    body: JSON.stringify(submissionData)
+  });
+
+  if (!response.ok) {
+    console.error('Failed to save to Supabase:', await response.text());
+  } else {
+    console.log('Submission saved to Supabase!');
+  }
+} catch (error) {
+  console.error('Error saving to Supabase:', error);
+  // Don't fail the request if saving fails
+}
     res.status(200).json(feedback);
 
   } catch (error) {

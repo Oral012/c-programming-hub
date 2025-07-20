@@ -2,7 +2,7 @@
   "exercises": [
     {
       "id": 1,
-      "title": "Point Distance",
+      "title": "Point Distance Calculator",
       "topic": "structs",
       "difficulty": "easy",
       "points": 35,
@@ -28,7 +28,7 @@
     },
     {
       "id": 2,
-      "title": "Game Character Stats",
+      "title": "Game Character Battle System",
       "topic": "structs",
       "difficulty": "medium",
       "points": 45,
@@ -54,7 +54,7 @@
     },
     {
       "id": 3,
-      "title": "Rectangle Collision",
+      "title": "Rectangle Collision Detection",
       "topic": "structs",
       "difficulty": "hard",
       "points": 60,
@@ -75,6 +75,203 @@
       ],
       "solution": {
         "code": "CollisionResult checkCollision(Rectangle rect1, Rectangle rect2) {\n    CollisionResult result = {false, 0, {0, 0, 0, 0}};\n    \n    // Check if rectangles collide\n    if (rect1.x < rect2.x + rect2.width &&\n        rect1.x + rect1.width > rect2.x &&\n        rect1.y < rect2.y + rect2.height &&\n        rect1.y + rect1.height > rect2.y) {\n        \n        result.collides = true;\n        \n        // Calculate overlap rectangle\n        result.overlapRect.x = (rect1.x > rect2.x) ? rect1.x : rect2.x;\n        result.overlapRect.y = (rect1.y > rect2.y) ? rect1.y : rect2.y;\n        \n        int right = (rect1.x + rect1.width < rect2.x + rect2.width) ? \n                    rect1.x + rect1.width : rect2.x + rect2.width;\n        int bottom = (rect1.y + rect1.height < rect2.y + rect2.height) ? \n                     rect1.y + rect1.height : rect2.y + rect2.height;\n        \n        result.overlapRect.width = right - result.overlapRect.x;\n        result.overlapRect.height = bottom - result.overlapRect.y;\n        \n        result.overlapArea = result.overlapRect.width * result.overlapRect.height;\n    }\n    \n    return result;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 4,
+      "title": "Dynamic Array Reversal",
+      "topic": "pointers",
+      "difficulty": "easy",
+      "points": 20,
+      "description": "Write a function that reverses an array of integers in-place using pointers. The function should take a pointer to the array and its size.",
+      "structDefinition": {
+        "code": "void reverseArray(int *arr, int size);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Array: [10, 20, 30, 40, 50]\nSize: 5",
+          "output": "Reversed: [50, 40, 30, 20, 10]",
+          "explanation": "Array elements are reversed in-place"
+        }
+      ],
+      "hints": [
+        "Use two pointers: one at the start and one at the end. Swap elements and move pointers toward each other."
+      ],
+      "solution": {
+        "code": "void reverseArray(int *arr, int size) {\n    int *start = arr;\n    int *end = arr + size - 1;\n    \n    while (start < end) {\n        // Swap elements\n        int temp = *start;\n        *start = *end;\n        *end = temp;\n        \n        // Move pointers\n        start++;\n        end--;\n    }\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 5,
+      "title": "String Substring Extraction",
+      "topic": "pointers",
+      "difficulty": "medium",
+      "points": 25,
+      "description": "Implement a function that extracts a substring from a string using pointers. The function should take source string, start index (inclusive), and end index (inclusive).",
+      "structDefinition": {
+        "code": "#define MAX_LEN 100\n\ntypedef struct {\n    char data[MAX_LEN];\n} String;\n\nString substring(String src, int start, int end);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "String: \"hamburger\"\nStart: 4, End: 8",
+          "output": "Result: \"urger\"",
+          "explanation": "Characters from index 4 to 8 (inclusive)"
+        },
+        {
+          "input": "String: \"international\"\nStart: 0, End: 4",
+          "output": "Result: \"inter\"",
+          "explanation": "First 5 characters"
+        }
+      ],
+      "hints": [
+        "Copy characters from src.data[start] to src.data[end] into result.data. Don't forget the null terminator!"
+      ],
+      "solution": {
+        "code": "String substring(String src, int start, int end) {\n    String result;\n    int index = 0;\n    \n    for (int i = start; i <= end; i++) {\n        result.data[index] = src.data[i];\n        index++;\n    }\n    result.data[index] = '\\0';\n    \n    return result;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 6,
+      "title": "Employee Task Tracker",
+      "topic": "structs",
+      "difficulty": "hard",
+      "points": 30,
+      "description": "Create an employee management system that tracks tasks. Find the employee who completed the most tasks and return their name.",
+      "structDefinition": {
+        "code": "#define MAX_LEN 100\n\ntypedef struct {\n    char data[MAX_LEN];\n} String;\n\ntypedef struct {\n    int id;\n    String name;\n} Employee;\n\ntypedef struct {\n    int employee_id;\n    int tasksDone;\n} Report;\n\nString getTopEmployeeName(Employee* employees, int empCount, \n                         Report* reports, int reportCount);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Employees: [(101, \"Ronan\"), (102, \"Bob\"), (103, \"Clara\")]\nReports: [(101, 4), (103, 3)]",
+          "output": "Top Employee: \"Ronan\"",
+          "explanation": "Ronan completed 4 tasks, the maximum"
+        }
+      ],
+      "hints": [
+        "First find the maximum number of tasks from reports, then find the employee with that ID in the employees array."
+      ],
+      "solution": {
+        "code": "String getTopEmployeeName(Employee* employees, int empCount, \n                         Report* reports, int reportCount) {\n    // Find max tasks and employee ID\n    int maxTask = 0;\n    int employeeIdMaxTask = -1;\n    \n    for (int i = 0; i < reportCount; i++) {\n        Report report = reports[i];\n        if (report.tasksDone > maxTask) {\n            maxTask = report.tasksDone;\n            employeeIdMaxTask = report.employee_id;\n        }\n    }\n    \n    // Find employee name\n    String topEmployee;\n    bool found = false;\n    \n    for (int i = 0; i < empCount && !found; i++) {\n        Employee employee = employees[i];\n        if (employee.id == employeeIdMaxTask) {\n            topEmployee = employee.name;\n            found = true;\n        }\n    }\n    \n    return topEmployee;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 7,
+      "title": "Memory Pool Manager",
+      "topic": "pointers",
+      "difficulty": "hard",
+      "points": 35,
+      "description": "Implement a simple memory pool manager that allocates blocks from a fixed-size buffer. Track allocated blocks and implement allocation/deallocation functions.",
+      "structDefinition": {
+        "code": "#define POOL_SIZE 1024\n#define MAX_BLOCKS 50\n\ntypedef struct {\n    void* address;\n    size_t size;\n    bool allocated;\n} Block;\n\ntypedef struct {\n    char pool[POOL_SIZE];\n    Block blocks[MAX_BLOCKS];\n    int blockCount;\n} MemoryPool;\n\nvoid* allocateBlock(MemoryPool* pool, size_t size);\nvoid deallocateBlock(MemoryPool* pool, void* ptr);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Allocate 100 bytes\nAllocate 200 bytes\nDeallocate first block\nAllocate 50 bytes",
+          "output": "Block 1: Address 0x0000, Size 100\nBlock 2: Address 0x0064, Size 200\nBlock 1 freed\nBlock 3: Address 0x0000, Size 50",
+          "explanation": "Memory is reused after deallocation"
+        }
+      ],
+      "hints": [
+        "Find the first available space in the pool that can fit the requested size. Keep track of allocated blocks to enable deallocation."
+      ],
+      "solution": {
+        "code": "void* allocateBlock(MemoryPool* pool, size_t size) {\n    // Find available space in pool\n    size_t currentPos = 0;\n    \n    for (int i = 0; i < pool->blockCount; i++) {\n        if (pool->blocks[i].allocated) {\n            size_t blockEnd = (char*)pool->blocks[i].address - pool->pool + \n                             pool->blocks[i].size;\n            if (blockEnd > currentPos) {\n                currentPos = blockEnd;\n            }\n        }\n    }\n    \n    // Check if enough space\n    if (currentPos + size > POOL_SIZE) {\n        return NULL;\n    }\n    \n    // Create new block\n    if (pool->blockCount < MAX_BLOCKS) {\n        pool->blocks[pool->blockCount].address = pool->pool + currentPos;\n        pool->blocks[pool->blockCount].size = size;\n        pool->blocks[pool->blockCount].allocated = true;\n        pool->blockCount++;\n        return pool->pool + currentPos;\n    }\n    \n    return NULL;\n}\n\nvoid deallocateBlock(MemoryPool* pool, void* ptr) {\n    for (int i = 0; i < pool->blockCount; i++) {\n        if (pool->blocks[i].address == ptr && pool->blocks[i].allocated) {\n            pool->blocks[i].allocated = false;\n            break;\n        }\n    }\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 8,
+      "title": "Linked List Operations",
+      "topic": "pointers",
+      "difficulty": "medium",
+      "points": 40,
+      "description": "Implement a function that finds the middle node of a linked list using the two-pointer technique (slow and fast pointers).",
+      "structDefinition": {
+        "code": "typedef struct Node {\n    int data;\n    struct Node* next;\n} Node;\n\nNode* findMiddle(Node* head);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "List: 1 -> 2 -> 3 -> 4 -> 5",
+          "output": "Middle node: 3",
+          "explanation": "The middle element of odd-length list"
+        },
+        {
+          "input": "List: 1 -> 2 -> 3 -> 4",
+          "output": "Middle node: 3",
+          "explanation": "For even-length list, return second middle"
+        }
+      ],
+      "hints": [
+        "Use two pointers: slow moves one step, fast moves two steps. When fast reaches the end, slow will be at the middle."
+      ],
+      "solution": {
+        "code": "Node* findMiddle(Node* head) {\n    if (head == NULL || head->next == NULL) {\n        return head;\n    }\n    \n    Node* slow = head;\n    Node* fast = head;\n    \n    // Move fast pointer two steps and slow pointer one step\n    while (fast != NULL && fast->next != NULL) {\n        slow = slow->next;\n        fast = fast->next->next;\n    }\n    \n    return slow;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 9,
+      "title": "Matrix Operations with Structs",
+      "topic": "structs",
+      "difficulty": "medium",
+      "points": 50,
+      "description": "Create a Matrix struct and implement matrix multiplication. The function should handle matrices of compatible dimensions.",
+      "structDefinition": {
+        "code": "#define MAX_SIZE 10\n\ntypedef struct {\n    int data[MAX_SIZE][MAX_SIZE];\n    int rows;\n    int cols;\n} Matrix;\n\nMatrix multiplyMatrices(Matrix a, Matrix b);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "Matrix A: 2x3\n[1 2 3]\n[4 5 6]\n\nMatrix B: 3x2\n[7 8]\n[9 10]\n[11 12]",
+          "output": "Result: 2x2\n[58 64]\n[139 154]",
+          "explanation": "Standard matrix multiplication"
+        }
+      ],
+      "hints": [
+        "For matrix multiplication, A.cols must equal B.rows. Result[i][j] = sum of A[i][k] * B[k][j] for all k."
+      ],
+      "solution": {
+        "code": "Matrix multiplyMatrices(Matrix a, Matrix b) {\n    Matrix result;\n    result.rows = a.rows;\n    result.cols = b.cols;\n    \n    // Initialize result matrix with zeros\n    for (int i = 0; i < result.rows; i++) {\n        for (int j = 0; j < result.cols; j++) {\n            result.data[i][j] = 0;\n        }\n    }\n    \n    // Perform multiplication\n    for (int i = 0; i < a.rows; i++) {\n        for (int j = 0; j < b.cols; j++) {\n            for (int k = 0; k < a.cols; k++) {\n                result.data[i][j] += a.data[i][k] * b.data[k][j];\n            }\n        }\n    }\n    \n    return result;\n}",
+        "language": "c"
+      }
+    },
+    {
+      "id": 10,
+      "title": "Advanced String Comparison",
+      "topic": "pointers",
+      "difficulty": "hard",
+      "points": 55,
+      "description": "Implement a case-insensitive string comparison function that handles special characters correctly using unsigned char casting.",
+      "structDefinition": {
+        "code": "int strcasecmp_safe(const char *s1, const char *s2);\n\n// Helper function to convert to lowercase\nint tolower_safe(unsigned char c);",
+        "language": "c"
+      },
+      "examples": [
+        {
+          "input": "s1: \"Hello\"\ns2: \"HELLO\"",
+          "output": "0 (equal)",
+          "explanation": "Case-insensitive comparison"
+        },
+        {
+          "input": "s1: \"café\"\ns2: \"CAFÉ\"",
+          "output": "0 (equal)",
+          "explanation": "Handles accented characters"
+        }
+      ],
+      "hints": [
+        "Cast to unsigned char to handle extended ASCII correctly. Convert both characters to lowercase before comparing."
+      ],
+      "solution": {
+        "code": "int tolower_safe(unsigned char c) {\n    if (c >= 'A' && c <= 'Z') {\n        return c + ('a' - 'A');\n    }\n    return c;\n}\n\nint strcasecmp_safe(const char *s1, const char *s2) {\n    unsigned char *p1 = (unsigned char *)s1;\n    unsigned char *p2 = (unsigned char *)s2;\n    \n    while (*p1 && *p2) {\n        int c1 = tolower_safe(*p1);\n        int c2 = tolower_safe(*p2);\n        \n        if (c1 != c2) {\n            return c1 - c2;\n        }\n        \n        p1++;\n        p2++;\n    }\n    \n    return tolower_safe(*p1) - tolower_safe(*p2);\n}",
         "language": "c"
       }
     }
